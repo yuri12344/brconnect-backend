@@ -3,6 +3,7 @@ import json
 from io import BytesIO
 from django.core.files import File
 from django.db import models
+from django.contrib import admin
 
 def generate_qr_code(data) -> File:
     qr = qrcode.QRCode(
@@ -20,7 +21,6 @@ def generate_qr_code(data) -> File:
     temp_handle.seek(0)
     return File(temp_handle) # Retorne a imagem do QR Code como um arquivo
 
-
 class QRCodeMixin(models.Model):
     qr_code = models.ImageField(upload_to='qr_codes/', blank=True)
     class Meta:
@@ -34,3 +34,4 @@ class QRCodeMixin(models.Model):
         qr_code_file = generate_qr_code(qr_data)# Gere a imagem do QR Code
         self.qr_code.save(f'qr_code_{self.pk}.png', qr_code_file, save=False) # Salve a imagem do QR Code no campo qr_code
         super().save(*args, **kwargs)
+

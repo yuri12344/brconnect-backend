@@ -1,37 +1,56 @@
-from django.db import models
+from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
+from django.db import models
+
+phone_regex = RegexValidator(
+    regex=r'^\+?1?\d{9,15}$',
+    message="Telefone deve ser inserido no formato correto: '+554187941579'. Até 15 digitos."
+)
 
 class Company(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='company')
-    name = models.CharField(max_length=255)
-    address = models.CharField(max_length=255)
-    phone = models.CharField(max_length=11)
-    description = models.TextField()
+    """
+    A Company represents a company.
+    """
+    name            = models.CharField(max_length=255, verbose_name="Nome")
+    address         = models.CharField(max_length=255, verbose_name="Endereço")
+    phone           = models.CharField(validators=[phone_regex], max_length=17, blank=True, verbose_name="Numero de telefone") # validators should be a list
+    description     = models.TextField(verbose_name="Descrição")
+    owner           = models.ForeignKey(User, on_delete=models.CASCADE, related_name='companies', verbose_name="Criador")
+    date_created    = models.DateTimeField(auto_now_add=True, verbose_name="Data Criação")
+
+
+    class Meta:
+        db_table = 'companies'
+        verbose_name = "Empresa"
+        verbose_name_plural = "Empresas"
 
     def __str__(self):
         return self.name
 
 
-class Seller(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='seller')
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sellers')
-    commission_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
-    unique_code = models.CharField(max_length=255, unique=True)
-    whatsapp_number = models.CharField(max_length=15)
-    pix = models.CharField(max_length=255)
-    
-    def calculate_commission(self):
-        return sum(sale.commission for sale in self.sales.filter(paid=True))
-
-    def __str__(self):
-        return self.user.username
-
-
 class Customer(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer')
-    address = models.CharField(max_length=255)
-    phone = models.CharField(max_length=11)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='customers')
+    """
+    A Customer represents a customer.
+    """
+    name        = models.CharField(max_length=255, verbose_name="Name")
+    email       = models.EmailField(max_length=255, null=True, blank=True, unique=True, verbose_name="Email")
+    street      = models.CharField(max_length=255, null=True, blank=True, verbose_name="Street")
+    state       = models.CharField(max_length=255, null=True, blank=True, verbose_name="State")
+    city        = models.CharField(max_length=255, null=True, blank=True, verbose_name="City")
+    zip         = models.CharField(max_length=255, null=True, blank=True, verbose_name="Zip Code")
+    phone       = models.CharField(validators=[phone_regex], max_length=17, blank=True, verbose_name="Phone Number") # validators should be a list
+    whatsapp    = models.CharField(max_length=20, null=True, blank=True, verbose_name="WhatsApp Number")
+    birthday    = models.DateField(null=True, blank=True, verbose_name="Birthday")
+    company     = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name='customers', related_query_name='customer', verbose_name="Company"
+    )
+    date_created = models.DateTimeField(auto_now_add=True, verbose_name="Date Created")
+    date_updated = models.DateTimeField(auto_now=True, verbose_name="Date Updated")
+
+    class Meta:
+        db_table = 'customers'
+        verbose_name = "Cliente"
+        verbose_name_plural = "Clientes"
 
     def __str__(self):
-        return self.user.username
+        return self.name
