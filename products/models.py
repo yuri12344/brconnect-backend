@@ -2,26 +2,10 @@ from django.core.validators import MinValueValidator
 from simple_history.models import HistoricalRecords
 from users.models import Company
 from django.db import models
+from datetime import datetime, timedelta
 
-
-class Coupon(models.Model):
-    """
-    A Coupon represents a discount code that can be applied to products or categories.
-    """
-    code = models.CharField(max_length=255, unique=True, verbose_name="Codigo")
-    description = models.TextField(null=True, blank=True, verbose_name="Descrição")
-    category = models.ManyToManyField('Category', related_name='coupons', related_query_name='coupon', blank=True, verbose_name="Categoria")
-    product = models.ManyToManyField('Product', related_name='coupons', related_query_name='coupon', blank=True, verbose_name="Produto")
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='coupons', verbose_name="Empresa")
-
-    class Meta:
-        db_table = 'coupons'
-        verbose_name = "Cupom"
-        verbose_name_plural = "Cupons"
-
-    def __str__(self):
-        return self.code
-
+def get_expiration_date():
+    return datetime.now() + timedelta(days=7)
 
 class Category(models.Model):
     """
@@ -32,7 +16,6 @@ class Category(models.Model):
     description = models.TextField(null=True, blank=True, verbose_name="Descrição")
     products = models.ManyToManyField('Product', related_name='categories', related_query_name='category', blank=True, verbose_name="Produtos")
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='categories', verbose_name="Empresa")
-    affinity_categories = models.ManyToManyField('self', symmetrical=False, blank=True, verbose_name="Categorias de Afinidade")
 
     class Meta:
         db_table = 'categories'
@@ -40,7 +23,23 @@ class Category(models.Model):
         verbose_name_plural = "Categorias"
 
     def __str__(self):
-        return self.name
+        return f'{self.alias} - {self.name}'
+
+
+class CategoryAffinity(models.Model):
+    """
+    A CategoryAffinity represents an affinity relationship between two categories.
+    """
+    category1 = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='affinities_as_category1')
+    category2 = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='affinities_as_category2')
+    image = models.ImageField(upload_to='affinity_images/', null=True, blank=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='category_affinities', verbose_name="Empresa")
+
+    class Meta:
+        unique_together = ('category1', 'category2')  # Each pair of categories should have at most one affinity
+
+    def __str__(self):
+        return f'Affinity from {self.category1.name} to {self.category2.name}'
 
 
 class Product(models.Model):
@@ -52,6 +51,8 @@ class Product(models.Model):
     description = models.TextField(null=True, blank=True, verbose_name="Descrição")
     active = models.BooleanField(default=True, verbose_name="Ativo")
     stock = models.IntegerField(validators=[MinValueValidator(0)], default=999, verbose_name="Estoque")
+    code = models.CharField(max_length=255, verbose_name="Código", null=True, blank=True, unique=True)
+    whatsapp_link = models.URLField(verbose_name="Link do Whatsapp", null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='products', verbose_name="Empresa")
     history = HistoricalRecords(inherit=True)
 
@@ -61,7 +62,15 @@ class Product(models.Model):
         verbose_name_plural = "Produtos"
 
     def __str__(self):
-        return self.name
+        categories = self.categories.all()
+        if categories:
+            categories_name = ""
+            for categorie in categories:
+                categories_name += categorie.name + ", "
+
+            return f'Produto: {self.name} | Categoria: {categories_name}'
+        else:
+            return f'Produto: {self.name}'
 
 
 class ProductImage(models.Model):
@@ -83,36 +92,4 @@ class ProductImage(models.Model):
 
 
 
-class Vitrine(models.Model):
-    """
-    A Vitrine represents a showcase of products.
-    """
-    name = models.CharField(max_length=255, verbose_name="Nome")
-    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True, related_name='vitrines', verbose_name="Categoria")
-    products = models.ManyToManyField('Product', through='VitrineProduct', related_name='vitrines', related_query_name='vitrine', blank=True, verbose_name="Produtos")
 
-    class Meta:
-        db_table = 'vitrines'
-        verbose_name = "Vitrine"
-        verbose_name_plural = "Vitrines"
-
-    def __str__(self):
-        return self.name
-    
-
-class VitrineProduct(models.Model):
-    """
-    A VitrineProduct represents the relationship between a Vitrine and a Product.
-    """
-    vitrine = models.ForeignKey(Vitrine, on_delete=models.CASCADE, verbose_name="Vitrine")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Produto")
-    date_added = models.DateTimeField(auto_now_add=True, verbose_name="Data adicionado")
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, verbose_name="Empresa")
-
-    class Meta:
-        db_table = 'vitrine_products'
-        verbose_name = "Produto da Vitrine"
-        verbose_name_plural = "Produtos da Vitrine"
-
-    def __str__(self) -> str:
-        return self.vitrine.name + ' - ' + self.product.name

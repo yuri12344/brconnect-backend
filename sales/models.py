@@ -1,8 +1,13 @@
 from simple_history.models import HistoricalRecords 
-from products.models import Product, Coupon
+from products.models import Product, Category
 from datetime import datetime, timedelta
 from users.models import Customer, Company
 from django.db import models
+
+
+def get_expiration_date():
+    return datetime.now() + timedelta(days=7)
+
 
 class Order(models.Model):
     """
@@ -14,15 +19,22 @@ class Order(models.Model):
         ('B', 'Boleto'),
         ('P', 'Pix'),
     ]
+    STATUS_CHOICES = [
+        (True, 'Pago'),
+        (False, 'Não pago'),
+    ]
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Total")
     payment_method = models.CharField(
         max_length=255, choices=PAYMENT_METHODS_CHOICES, blank=False, null=False, default='P', verbose_name="Metodo de pagamento"
     )
+    paid    = models.BooleanField(choices=STATUS_CHOICES, default=False, verbose_name="Pago")
+    paid_at = models.DateTimeField(auto_now_add=True, verbose_name="Pago em: ")
     customer    = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders', verbose_name="Cliente")
-    coupon      = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders', verbose_name="Cupom")
+    coupon      = models.ForeignKey('Coupon', on_delete=models.SET_NULL, null=True, blank=True, related_name='orders', verbose_name="Cupom")
     created_at  = models.DateTimeField(auto_now_add=True, verbose_name="Criado em: ")
-    expires_at  = models.DateTimeField(default=lambda: datetime.now() + timedelta(days=7), verbose_name="Expira em: ")
+    expires_at  = models.DateTimeField(default=get_expiration_date, verbose_name="Expira em: ")
     company     = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='orders', verbose_name="Empresa")
+    history = HistoricalRecords(inherit=True)
 
     class Meta:
         db_table = 'orders'
@@ -31,6 +43,7 @@ class Order(models.Model):
 
     def __str__(self):
         return f'Pedido {self.id} para {self.customer.name}'
+
 
 class ProductOrderItem(models.Model):
     """
@@ -49,23 +62,58 @@ class ProductOrderItem(models.Model):
         return f'Item produto {self.id} do pedido {self.order.id}'
 
 
-class Sale(models.Model):
+class Collection(models.Model):
     """
-    A Sale represents a completed order.
+    A Collection represents a showcase of products.
     """
-    STATUS_CHOICES = [
-        (True, 'Pago'),
-        (False, 'Não pago'),
-    ]
-    order   = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='sale', verbose_name="Pedido")
-    paid    = models.BooleanField(choices=STATUS_CHOICES, default=False, verbose_name="Pago")
-    paid_at = models.DateTimeField(auto_now_add=True, verbose_name="Pago em: ")
-    history = HistoricalRecords(inherit=True)
+    name = models.CharField(max_length=255, verbose_name="Nome")
+    categories = models.ManyToManyField(Category, related_name='collections', verbose_name="Categorias", blank=True)
+    products = models.ManyToManyField(Product, through='CollectionProduct', related_name='collections', related_query_name='collection', blank=True, verbose_name="Produtos")
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, verbose_name="Empresa")
 
     class Meta:
-        db_table = 'sales'
-        verbose_name = "Venda"
-        verbose_name_plural = "Vendas"
+        db_table = 'collections'
+        verbose_name = "Coleção"
+        verbose_name_plural = "Coleções"
 
     def __str__(self):
-        return f'Venda {self.id} para Pedido {self.order.id}'
+        return self.name
+    
+
+class CollectionProduct(models.Model):
+    """
+    A CollectionProduct represents the relationship between a Collection and a Product.
+    """
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, verbose_name="Collection")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Produto")
+    date_added = models.DateTimeField(auto_now_add=True, verbose_name="Data adicionado")
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='collection_products', verbose_name="Empresa")
+
+    class Meta:
+        db_table = 'collection_products'
+        verbose_name = "Produto da Collection"
+        verbose_name_plural = "Produtos da Collection"
+
+    def __str__(self) -> str:
+        return self.collection.name + ' - ' + self.product.name
+    
+
+class Coupon(models.Model):
+    """
+    A Coupon represents a discount code that can be applied to products or categories.
+    """
+    code = models.CharField(max_length=255, unique=True, verbose_name="Codigo")
+    descount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Desconto")
+    description = models.TextField(null=True, blank=True, verbose_name="Descrição")
+    category = models.ManyToManyField(Category, related_name='coupons', related_query_name='coupon', blank=True, verbose_name="Categoria")
+    product = models.ManyToManyField(Product, related_name='coupons', related_query_name='coupon', blank=True, verbose_name="Produto")
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='coupons', verbose_name="Empresa")
+    expires_at  = models.DateTimeField(default=get_expiration_date, verbose_name="Expira em: ")
+
+    class Meta:
+        db_table = 'coupons'
+        verbose_name = "Cupom"
+        verbose_name_plural = "Cupons"
+
+    def __str__(self):
+        return self.code
