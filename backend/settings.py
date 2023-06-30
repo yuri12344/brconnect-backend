@@ -96,15 +96,15 @@ sqlite = {
 
 mysql = {
         'ENGINE': 'mysql.connector.django',
-        'NAME': 'django',
-        'USER': 'django',
-        'PASSWORD': 'k8PWQeEKx8PBYCEQp2zR',
-        'HOST': '129.148.54.238',   # Ou um endereço IP, se o banco de dados não estiver na sua máquina local
+        'NAME': 'backend',
+        'USER': 'backend',
+        'PASSWORD': 'xa9GaZIJRW0DDXmA0L0V',
+        'HOST': '127.0.0.1',   # Ou um endereço IP, se o banco de dados não estiver na sua máquina local
         'PORT': '3306',        # A porta padrão para MySQL é 3306
 }
 
 DATABASES = {
-    'default': sqlite
+    'default': mysql
 }
 
 
