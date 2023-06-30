@@ -96,15 +96,15 @@ sqlite = {
 
 mysql = {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'backend',
-        'USER': 'backend',
-        'PASSWORD': 'xa9GaZIJRW0DDXmA0L0V',
+        'NAME': 'backendbrconnect',
+        'USER': 'backendbrconnect',
+        'PASSWORD': 'nzjWVeXwqXlTq0yJoYB3',
         'HOST': '127.0.0.1',   # Ou um endereço IP, se o banco de dados não estiver na sua máquina local
         'PORT': '3306',        # A porta padrão para MySQL é 3306
 }
 
 DATABASES = {
-    'default': sqlite
+    'default': mysql
 }
 
 
@@ -154,9 +154,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-"""
 SESSION_COOKIE_DOMAIN = 'backend.brconnect.click'
 CSRF_COOKIE_DOMAIN = 'backend.brconnect.click'
 CSRF_TRUSTED_ORIGINS = ['https://backend.brconnect.click']
 LANGUAGE_CODE = 'pt-br'
-"""
