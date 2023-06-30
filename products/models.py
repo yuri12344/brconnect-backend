@@ -47,7 +47,7 @@ class Product(models.Model):
     A Product represents an item for sale.
     """
     name = models.CharField(max_length=255, verbose_name="Nome")
-    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Preço")
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Preço", default=0.00)
     description = models.TextField(null=True, blank=True, verbose_name="Descrição")
     active = models.BooleanField(default=True, verbose_name="Ativo")
     stock = models.IntegerField(validators=[MinValueValidator(0)], default=999, verbose_name="Estoque")
