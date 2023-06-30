@@ -95,7 +95,7 @@ sqlite = {
 }
 
 mysql = {
-        'ENGINE': 'mysql.connector.django',
+        'ENGINE': 'mysql.connector.mysql',
         'NAME': 'backend',
         'USER': 'backend',
         'PASSWORD': 'xa9GaZIJRW0DDXmA0L0V',
