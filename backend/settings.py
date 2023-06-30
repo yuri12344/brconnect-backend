@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-1mq9k$d%x^s8&t2&%_@&z%ygld#u)!^yk8q_i(oupnnw_06-1e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['backend.brconnect.click']
 
 
 # Application definition
