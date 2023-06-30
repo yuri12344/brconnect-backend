@@ -29,7 +29,7 @@ class CompanyAdmin(admin.ModelAdmin):
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
     exclude = ('company',)  # Exclude the company field from the form
-    filter_horizontal = ('preferences', )
+    filter_horizontal = ('preferences', 'purchase_history',)
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -57,13 +57,28 @@ class InteractionAdmin(admin.ModelAdmin):
     exclude = ('company',)  # Exclude the company field from the form
     filter_horizontal = ('customers', )
 
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == "customers":
+            if request.user.is_superuser:
+                kwargs["queryset"] = Customer.objects.all()
+            elif hasattr(request.user, 'employee'):
+                kwargs["queryset"] = Customer.objects.filter(company=request.user.employee.company)
+            elif hasattr(request.user, 'company'):
+                kwargs["queryset"] = Customer.objects.filter(company=request.user.company)
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        return qs.filter(company=request.user.company)
-    
+        elif hasattr(request.user, 'employee'):
+            return qs.filter(company=request.user.employee.company)
+        elif hasattr(request.user, 'company'):
+            return qs.filter(company=request.user.company)
+        else:
+            messages.warning(request, "Você precisa criar uma empresa antes de criar interações.")
+            return qs.none()
+
     def save_model(self, request, obj, form, change):
         if not change:  # Only set the company when the object is first created
             obj.company = request.user.company

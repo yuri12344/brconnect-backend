@@ -78,9 +78,9 @@ class ProductImage(models.Model):
     A ProductImage represents an image of a product.
     """
     product = models.ForeignKey(Product, related_name='images', on_delete=models.CASCADE, verbose_name="Produto")
-    url_secondary = models.URLField(verbose_name="URL Secundaria")
+    url_secondary = models.URLField(verbose_name="URL Secundaria", null=True, blank=True)
     image = models.ImageField(upload_to='products', null=True, blank=True, verbose_name="Imagem")
-    description= models.CharField(max_length=255, verbose_name="Descrição")
+    description= models.CharField(max_length=255, verbose_name="Descrição", null=True, blank=True)
 
     class Meta:
         db_table = 'images'

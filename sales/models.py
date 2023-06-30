@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from simple_history.models import HistoricalRecords 
 from products.models import Product, Category
 from datetime import datetime, timedelta
@@ -51,7 +52,7 @@ class ProductOrderItem(models.Model):
     """
     order       = models.ForeignKey(Order, related_name='product_order_items', on_delete=models.CASCADE, verbose_name="Pedido")
     product     = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Produto")
-    quantity    = models.PositiveIntegerField(verbose_name="Quantidade")
+    quantity    = models.PositiveIntegerField(verbose_name="Quantidade", default=1)
 
     class Meta:
         db_table = 'product_order_items'
@@ -103,10 +104,11 @@ class Coupon(models.Model):
     A Coupon represents a discount code that can be applied to products or categories.
     """
     code = models.CharField(max_length=255, unique=True, verbose_name="Codigo")
-    descount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Desconto")
+    discount = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], default=0, help_text="Desconto em %", verbose_name="Desconto")
     description = models.TextField(null=True, blank=True, verbose_name="Descrição")
-    category = models.ManyToManyField(Category, related_name='coupons', related_query_name='coupon', blank=True, verbose_name="Categoria")
-    product = models.ManyToManyField(Product, related_name='coupons', related_query_name='coupon', blank=True, verbose_name="Produto")
+    categories = models.ManyToManyField(Category, related_name='coupons', related_query_name='coupon', blank=True, verbose_name="Categoria")
+    products = models.ManyToManyField(Product, related_name='coupons', related_query_name='coupon', blank=True, verbose_name="Produto")
+    collections = models.ManyToManyField(Collection, related_name='coupons', related_query_name='coupon', blank=True, verbose_name="Coleção")
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='coupons', verbose_name="Empresa")
     expires_at  = models.DateTimeField(default=get_expiration_date, verbose_name="Expira em: ")
 

@@ -50,11 +50,13 @@ class CategoryAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
-        if db_field.name == "affinity_categories":
-            if request._obj_ is not None:
-                kwargs["queryset"] = Category.objects.exclude(id=request._obj_.id)
-            else:
-                kwargs["queryset"] = Category.objects.all()
+        if db_field.name == "products":
+            if request.user.is_superuser:
+                kwargs["queryset"] = Product.objects.all()
+            elif hasattr(request.user, 'employee'):
+                kwargs["queryset"] = Product.objects.filter(company=request.user.employee.company)
+            elif hasattr(request.user, 'company'):
+                kwargs["queryset"] = Product.objects.filter(company=request.user.company)
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
     def get_form(self, request, obj=None, **kwargs):
