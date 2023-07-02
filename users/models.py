@@ -114,6 +114,22 @@ class Customer(models.Model):
     def interaction_history(self):
         return "\n".join(interaction.description for interaction in self.interactions.all())
 
+class CustomerGroup(models.Model):
+    """
+    A CustomerGroup represents a group of customers.
+    """
+    name        = models.CharField(max_length=50, verbose_name="Nome do Grupo")
+    customers   = models.ManyToManyField(Customer, related_name='groups', blank=True, verbose_name="Clientes")
+    company     = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='groups', verbose_name="Empresa")
+
+    class Meta:
+        db_table = 'customer_groups'
+        verbose_name = "Grupos de cliente"
+        verbose_name_plural = "Grupos de clientes"
+
+    def __str__(self):
+        return self.name
+
 
 class Interaction(models.Model):
     name        = models.CharField(max_length=255, verbose_name="Nome", default="Interação")

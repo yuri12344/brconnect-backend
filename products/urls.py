@@ -1,9 +1,13 @@
-# usuarios/urls.py
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import ProductViewSet, useCasesByProductViewSet
 
-from django.urls import path
-from .views import ProductsView
+router = DefaultRouter()
+router.register(r'products', ProductViewSet)
+router.register(r'recomendations', useCasesByProductViewSet, basename='recomendacao')
 
 urlpatterns = [
-    path('', ProductsView.as_view(), name='example')
-    # outras rotas do app usuarios
+    path('', include(router.urls)),
 ]
+
+
