@@ -1,9 +1,8 @@
 from users.models import Company
 from django.db import models
-from abc import ABC
 
 
-class WhatsAppSession(ABC):
+class WhatsAppSession(models.Model):
     """
     A WhatsAppSession represents a WhatsApp Web session for a company.
     """
