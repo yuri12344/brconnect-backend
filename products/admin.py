@@ -1,12 +1,20 @@
-from .models import Product, ProductImage, Category, CategoryAffinity
+from .models import Product, ProductImage, Category, CategoryAffinity, WhatsAppProductInfo
 from django.contrib import admin
 
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 1  # Número de linhas extras a serem mostradas.
 
+
 class ProductClassAdmin(admin.ModelAdmin):
     inlines = [ProductImageInline]
+
+@admin.register(WhatsAppProductInfo)
+class WhatsAppProductInfoAdmin(admin.ModelAdmin):
+    exclude = ('company',)  # Exclude the company field from the form
+    filter_horizontal = ('images',)
+
+    ...
 
 @admin.register(Product)
 class ProductAdmin(ProductClassAdmin):

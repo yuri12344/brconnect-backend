@@ -88,7 +88,7 @@ mysql = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'brconnect',
         'USER': 'brconnect',
-        'PASSWORD': '4BXKKCN9TRulKEnASQgu',
+        'PASSWORD': 'qqEV7JDj3dzSqpaH7lPQ',
         'HOST': '168.138.133.69',   
         'PORT': '3306',       
 }
@@ -146,7 +146,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
 
 SESSION_COOKIE_DOMAIN = 'backend.brconnect.click'
 CSRF_COOKIE_DOMAIN = 'backend.brconnect.click'

@@ -92,15 +92,16 @@ class WhatsAppProductInfo(models.Model):
     name = models.CharField(max_length=255, verbose_name="Nome do Produto no WhatsApp", null=True, blank=True)
     description = models.TextField(verbose_name="Descrição do Produto no WhatsApp", null=True, blank=True)
     product = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='whatsapp_info')
-    retailer_id = models.CharField(max_length=255, verbose_name="ID do Produto no WhatsApp", null=True, blank=True)
+    retailer_id = models.CharField(max_length=255, verbose_name="Código do item", null=True, blank=True)
+    id = models.CharField(max_length=255, verbose_name="ID produto Meta", primary_key=True)
+    link = models.URLField(verbose_name="Link no Whatsapp", null=True, blank=True)
     images = models.ManyToManyField(ProductImage, blank=True, related_name='whatsapp_products')
-    link = models.URLField(verbose_name="Link do Whatsapp", null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='whatsapp_products', verbose_name="Empresa")
 
     class Meta:
         db_table = 'whatsapp_product_info'
-        verbose_name = "Informação do Produto no WhatsApp"
-        verbose_name_plural = "Informações dos Produtos no WhatsApp"
+        verbose_name = "Produto no WhatsApp"
+        verbose_name_plural = "Produtos no WhatsApp"
 
     def __str__(self):
         return f'WhatsApp Info for Product: {self.product.name}'
