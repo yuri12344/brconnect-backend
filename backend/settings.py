@@ -148,6 +148,7 @@ MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+"""
 SESSION_COOKIE_DOMAIN = 'backend.brconnect.click'
 
 CSRF_COOKIE_DOMAIN = 'backend.brconnect.click'
@@ -155,7 +156,7 @@ CSRF_COOKIE_DOMAIN = 'backend.brconnect.click'
 CSRF_TRUSTED_ORIGINS = ['http://backend.brconnect.click', 'https://backend.brconnect.click']
 
 LANGUAGE_CODE = 'pt-br'
-
+"""
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [

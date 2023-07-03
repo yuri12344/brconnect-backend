@@ -1,5 +1,4 @@
 from .models import Order, ProductOrderItem, CollectionProduct, Coupon, Collection
-from users.models import Customer
 from django.contrib import admin
 from django.utils import timezone
 

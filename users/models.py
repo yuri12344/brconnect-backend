@@ -1,6 +1,11 @@
+from rest_framework.authtoken.models import Token
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 
 phone_regex = RegexValidator(
     regex=r'^\+?1?\d{9,15}$',
@@ -52,7 +57,7 @@ class Company(models.Model):
     industry                = models.CharField(max_length=255, choices=INDUSTRY_CHOICES, blank=True, null=True, verbose_name="Indústria")
     order_expiration_days   = models.PositiveIntegerField(default=7, verbose_name="Dias para expiração do pedido não pago e não enviado")
     employee_count          = models.IntegerField(choices=EMPLOYEE_COUNT_CHOICES, blank=True, null=True, verbose_name="Quantidade de Funcionários")
-
+    
     class Meta:
         db_table = 'companies'
         verbose_name = "Empresa"
@@ -114,6 +119,7 @@ class Customer(models.Model):
     def interaction_history(self):
         return "\n".join(interaction.description for interaction in self.interactions.all())
 
+    
 class CustomerGroup(models.Model):
     """
     A CustomerGroup represents a group of customers.
@@ -148,3 +154,7 @@ class Interaction(models.Model):
         return f'Interação {self.name}'
 
 
+@receiver(post_save, sender=User)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)

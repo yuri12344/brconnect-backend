@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from .models import Customer, Company, Interaction
+from rest_framework.authtoken.models import Token
 from django.contrib import messages
 from django.contrib import admin
 
@@ -7,6 +8,11 @@ from django.contrib import admin
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
     exclude = ('owner',)  # Exclude the owner field from the form
+    readonly_fields = ('owner_token',)
+
+    def owner_token(self, obj):
+        token, created = Token.objects.get_or_create(user=obj.owner)
+        return token.key
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
