@@ -9,16 +9,17 @@ class ProductImageInline(admin.TabularInline):
 class ProductClassAdmin(admin.ModelAdmin):
     inlines = [ProductImageInline]
 
+
 @admin.register(WhatsAppProductInfo)
 class WhatsAppProductInfoAdmin(admin.ModelAdmin):
     exclude = ('company',)  # Exclude the company field from the form
     filter_horizontal = ('images',)
-
-    ...
+    search_fields = ('product__name', 'product__description', 'product__category__name')
 
 @admin.register(Product)
 class ProductAdmin(ProductClassAdmin):
     exclude = ('company',)  # Exclude the company field from the form
+    search_fields = ('name', 'description', 'category__name')
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
