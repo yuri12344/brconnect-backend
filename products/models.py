@@ -25,7 +25,6 @@ class Category(models.Model):
     def __str__(self):
         return f'{self.alias} - {self.name}'
 
-
 class CategoryAffinity(models.Model):
     """
     A CategoryAffinity represents an affinity relationship between two categories.
@@ -41,7 +40,6 @@ class CategoryAffinity(models.Model):
     def __str__(self):
         return f'Affinity from {self.category1.name} to {self.category2.name}'
 
-
 class Product(models.Model):
     """
     A Product represents an item for sale.
@@ -51,8 +49,6 @@ class Product(models.Model):
     description = models.TextField(null=True, blank=True, verbose_name="Descrição")
     active = models.BooleanField(default=True, verbose_name="Ativo")
     stock = models.IntegerField(validators=[MinValueValidator(0)], default=999, verbose_name="Estoque")
-    code = models.CharField(max_length=255, verbose_name="Código", null=True, blank=True, unique=True)
-    whatsapp_link = models.URLField(verbose_name="Link do Whatsapp", null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='products', verbose_name="Empresa")
     history = HistoricalRecords(inherit=True)
 
@@ -72,7 +68,6 @@ class Product(models.Model):
         else:
             return f'Produto: {self.name}'
 
-
 class ProductImage(models.Model):
     """
     A ProductImage represents an image of a product.
@@ -90,6 +85,22 @@ class ProductImage(models.Model):
     def __str__(self):
         return self.url
 
+class WhatsAppProductInfo(models.Model):
+    """
+    A WhatsAppProductInfo represents specific information related to a product on WhatsApp.
+    """
+    name = models.CharField(max_length=255, verbose_name="Nome do Produto no WhatsApp", null=True, blank=True)
+    description = models.TextField(verbose_name="Descrição do Produto no WhatsApp", null=True, blank=True)
+    product = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='whatsapp_info')
+    retailer_id = models.CharField(max_length=255, verbose_name="ID do Produto no WhatsApp", null=True, blank=True)
+    images = models.ManyToManyField(ProductImage, blank=True, related_name='whatsapp_products')
+    link = models.URLField(verbose_name="Link do Whatsapp", null=True, blank=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='whatsapp_products', verbose_name="Empresa")
 
+    class Meta:
+        db_table = 'whatsapp_product_info'
+        verbose_name = "Informação do Produto no WhatsApp"
+        verbose_name_plural = "Informações dos Produtos no WhatsApp"
 
-
+    def __str__(self):
+        return f'WhatsApp Info for Product: {self.product.name}'

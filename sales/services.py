@@ -1,9 +1,22 @@
 from .models import Product
 
-def get_affinity_products(category):
+class OrderService:
     """
-    Get products from affinity categories.
+    Service to handle orders.
     """
-    products = Product.objects.filter(categories__in=category.affinity_categories.all())
-    return products
+    def __init__(self, order):
+        self.order = order
 
+    def get_affinity_products(self):
+        """
+        Get products from affinity categories.
+        """
+        products = Product.objects.filter(categories__in=self.order.categories.all())
+        return products
+
+    def get_recomendations(self):
+        """
+        Get products from affinity categories.
+        """
+        products = Product.objects.filter(categories__in=self.order.categories.all())
+        return products
