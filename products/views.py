@@ -8,11 +8,3 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-
-class useCasesByProductViewSet(viewsets.ViewSet):
-    def list(self, request):
-        body = request.data
-        products = Product.objects.all()
-        return Response({"products": f"products useCases o body é {body}"})
-    
-

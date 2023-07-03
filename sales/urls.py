@@ -1,9 +1,9 @@
 # usuarios/urls.py
 
 from django.urls import path
-from .views import SaleView
+from .views import OrderView
 
 urlpatterns = [
-    path('', SaleView.as_view(), name='example')
+    path('', OrderView.as_view(), name='example')
     # outras rotas do app usuarios
 ]
