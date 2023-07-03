@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'products',
     'sales',
     'users',
-    # 'whatsapp',
+    'whatsapp',
 ]
 
 MIDDLEWARE = [
@@ -88,7 +88,7 @@ mysql = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'brconnect',
         'USER': 'brconnect',
-        'PASSWORD': 'qqEV7JDj3dzSqpaH7lPQ',
+        'PASSWORD': 'e45kqJKBxfvrTHKtWdKF',
         'HOST': '168.138.133.69',   
         'PORT': '3306',       
 }
@@ -148,7 +148,9 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 SESSION_COOKIE_DOMAIN = 'backend.brconnect.click'
+
 CSRF_COOKIE_DOMAIN = 'backend.brconnect.click'
+
 CSRF_TRUSTED_ORIGINS = ['http://backend.brconnect.click', 'https://backend.brconnect.click']
 
 LANGUAGE_CODE = 'pt-br'

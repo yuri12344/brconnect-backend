@@ -1,7 +1,7 @@
-from django.db import models
 from users.models import Company
-
+from django.db import models
 from abc import ABC
+
 
 class WhatsAppSession(ABC):
     """
@@ -17,7 +17,6 @@ class WhatsAppSession(ABC):
     def __str__(self):
         return f'Sessão do WhatsApp para {self.company.name} ({self.phone_number})'
 
-
 class WppConnectSession(WhatsAppSession):
     """
     A WppConnectSession represents a WppConnect WhatsApp Web session for a company.
@@ -30,6 +29,30 @@ class WppConnectSession(WhatsAppSession):
         verbose_name = "Sessão do WppConnect"
         verbose_name_plural = "Sessões do WppConnect"
 
+
+class TextMessage(models.Model):
+    message = models.TextField(verbose_name="Mensagem")
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='text_messages')
+
+    class Meta:
+        verbose_name = "Texto"
+        verbose_name_plural = "Textos"
+    def __str__(self):
+        return self.message
+
+
+class ImageMessage(models.Model):
+    name    = models.CharField(max_length=200, verbose_name="Nome")
+    image   = models.ImageField(upload_to='images/', verbose_name="Imagem")
+    caption = models.CharField(max_length=200, verbose_name="Legenda")
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='image_messages')
+
+    class Meta:
+        verbose_name = "Imagem"
+        verbose_name_plural = "Imagens"
+    def __str__(self):
+        return self.image.url
+    
 
 class Campaign(models.Model):
     STATUS_CHOICE = (
@@ -48,27 +71,10 @@ class Campaign(models.Model):
 
     name = models.CharField(max_length=200, verbose_name="Nome")
     description = models.TextField(verbose_name="Descrição")
+    text_messages = models.ManyToManyField(TextMessage, blank=True, related_name='campaigns')
+    image_messages = models.ManyToManyField(ImageMessage, blank=True, related_name='campaigns')
     status = models.IntegerField(choices=STATUS_CHOICE, default=0, verbose_name="Status")
     schedule_type = models.CharField(max_length=10, choices=SCHEDULE_TYPE_CHOICES, default='now')
     schedule_time = models.TimeField(null=True, blank=True)
     schedule_day = models.IntegerField(null=True, blank=True)
-
-
-class TextMessage(models.Model):
-    message = models.TextField(verbose_name="Mensagem")
-    class Meta:
-        verbose_name = "Texto"
-        verbose_name_plural = "Textos"
-    def __str__(self):
-        return self.message
-
-
-class ImageMessage(models.Model):
-    name    = models.CharField(max_length=200, verbose_name="Nome")
-    image   = models.ImageField(upload_to='images/', verbose_name="Imagem")
-    caption = models.CharField(max_length=200, verbose_name="Legenda")
-    class Meta:
-        verbose_name = "Imagem"
-        verbose_name_plural = "Imagens"
-    def __str__(self):
-        return self.image.url
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='campaigns')

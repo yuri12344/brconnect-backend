@@ -8,15 +8,10 @@ class OrderService:
         self.order = order
 
     def get_affinity_products(self):
-        """
-        Get products from affinity categories.
-        """
-        products = Product.objects.filter(categories__in=self.order.categories.all())
-        return products
+        return Product.objects.filter(categories__in=self.order.categories.all())
 
     def get_recomendations(self):
-        """
-        Get products from affinity categories.
-        """
-        products = Product.objects.filter(categories__in=self.order.categories.all())
-        return products
+        return Product.objects.filter(categories__in=self.order.categories.all())   
+    
+    def get_order_products(self):
+        ...
