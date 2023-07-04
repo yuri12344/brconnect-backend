@@ -165,11 +165,11 @@ class WhatsAppOrderProcessingService:
 
         if not categories_list:
             if self.total_quantity == 1:
-                message = "💳Para melhorar o *custo benefício* de sua compra, sugerimos que *adicione mais um produto* por conta do *valor do frete.*🧀"
-                self.send_message(message=message, phone=self.client_phone, is_group=None)
+                msg = "💳Para melhorar o *custo benefício* de sua compra, sugerimos que *adicione mais um produto* por conta do *valor do frete.*🧀"
+                self.send_message(message=msg, phone=self.client_phone, is_group=None)
                 return
             raise Exception('No categories found for products')
-
+        ipdb.set_trace()
         products_for_recommendation = self._get_products_for_recommendation(categories_list)
 
         if not products_for_recommendation:
