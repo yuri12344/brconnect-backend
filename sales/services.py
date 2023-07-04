@@ -129,6 +129,7 @@ class WhatsAppOrderProcessingService:
         self.products           = None
         self.recommendations    = None
         self.whatsapp_client    = self.get_whatsapp_client()
+        self.total_quantity     = sum(product['quantity'] for product in self.products['base_products'])
 
     def get_client_instance(self):
         client, created = Customer.objects.get_or_create(
@@ -160,11 +161,19 @@ class WhatsAppOrderProcessingService:
         categories_list = self._get_categories()
 
         if not categories_list:
+            if self.total_quantity == 1:
+                message = "💳Para melhorar o *custo benefício* de sua compra, sugerimos que *adicione mais um produto* por conta do *valor do frete.*🧀"
+                self.send_message(message=message, phone=self.client_phone, is_group=None)
+                return
             raise Exception('No categories found for products')
 
         products_for_recommendation = self._get_products_for_recommendation(categories_list)
 
         if not products_for_recommendation:
+            if self.total_quantity == 1:
+                message = "💳Para melhorar o *custo benefício* de sua compra, sugerimos que *adicione mais um produto* por conta do *valor do frete.*🧀"
+                self.send_message(message=message, phone=self.client_phone, is_group=None)
+                return
             raise Exception('No products found for recommendations')
         
         self._send_recommendation_messages(products_for_recommendation)
@@ -202,11 +211,15 @@ class WhatsAppOrderProcessingService:
 
     def _create_recommendation_messages(self, products_for_recommendation):
         """Creates recommendation messages for each product."""
-        messages = ["😊Abaixo algumas *sugestões* de produtos que *combinam* com a sua *compra:*"]
+        messages = []
+        if self.total_quantity == 1:
+            messages.append("💳Para melhorar o *custo benefício* de sua compra, sugerimos que *adicione mais um produto* por conta do *valor do frete.*🧀")
+        
+        messages.append("😊Abaixo algumas *sugestões* de produtos que *combinam* com a sua *compra:*")
         for product in products_for_recommendation:
             link = product.link if product.link else ""
             messages.append(f"*{product.product.name}:* {link}")
-        messages.append("🧀*Interessando*, é só *clicar* no link, *adicionar ao carrinho* e enviar que os carrinhos se somam.")
+        messages.append("🧀 *Interessando*, é só *clicar* no link, *adicionar ao carrinho* e enviar que os carrinhos se somam.")
         return messages
 
     def create_order(self):
