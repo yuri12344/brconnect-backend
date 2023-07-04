@@ -158,7 +158,7 @@ class WhatsAppOrderProcessingService:
             link = product.link if product.link else ""
             messages.append(f"{product.product.name} - Link: {link}")
 
-        messages.append("Caso tenha interesse em algum produto, é só me chamar! 😊")
+        messages.append("Caso tenha interesse, só clicar no link, adicionar ao carrinho e depois enviar que os carrinhos se somam.")
         for message in messages:
             self.send_message(message=message, phone="554185115949")
             time.sleep(3)
