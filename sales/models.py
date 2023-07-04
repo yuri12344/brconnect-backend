@@ -4,6 +4,7 @@ from products.models import Product, Category
 from datetime import datetime, timedelta
 from users.models import Customer, Company
 from django.db import models
+from django.utils import timezone
 
 
 def get_expiration_date():
@@ -28,19 +29,22 @@ class Order(models.Model):
     payment_method = models.CharField(
         max_length=255, choices=PAYMENT_METHODS_CHOICES, blank=False, null=False, default='P', verbose_name="Metodo de pagamento"
     )
-    paid    = models.BooleanField(choices=STATUS_CHOICES, default=False, verbose_name="Pago")
-    paid_at = models.DateTimeField(auto_now_add=True, verbose_name="Pago em: ")
+    paid        = models.BooleanField(choices=STATUS_CHOICES, default=False, verbose_name="Pago")
+    paid_at     = models.DateTimeField(auto_now_add=True, verbose_name="Pago em: ")
     customer    = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders', verbose_name="Cliente")
     coupon      = models.ForeignKey('Coupon', on_delete=models.SET_NULL, null=True, blank=True, related_name='orders', verbose_name="Cupom")
     created_at  = models.DateTimeField(auto_now_add=True, verbose_name="Criado em: ")
     expires_at  = models.DateTimeField(default=get_expiration_date, verbose_name="Expira em: ")
     company     = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='orders', verbose_name="Empresa")
-    history = HistoricalRecords(inherit=True)
+    history     = HistoricalRecords(inherit=True)
 
     class Meta:
         db_table = 'orders'
         verbose_name = "Pedido"
         verbose_name_plural = "Pedidos"
+
+    def is_paid_and_not_expired(self):
+            return not self.paid and timezone.now() < self.expires_at
 
     def __str__(self):
         return f'Pedido {self.id} para {self.customer.name}'

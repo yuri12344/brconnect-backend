@@ -15,7 +15,9 @@ class OrderView(APIView):
             try:
                 whatsapp_order_service = WhatsAppOrderProcessingService(
                     company = request.user.company,
-                    message_id = serializer.data["message_id"]
+                    message_id = serializer.data["message_id"],
+                    client_name = serializer.data["client_name"],
+                    client_phone = serializer.data["client_phone"],
                 )
                 whatsapp_order_service.fetch_products()
                 whatsapp_order_service.get_recommendations()

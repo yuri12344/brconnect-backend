@@ -86,7 +86,10 @@ class Customer(models.Model):
     phone               = models.CharField(validators=[phone_regex], max_length=17, blank=True, verbose_name="Phone Number") # validators should be a list
     birthday            = models.DateField(null=True, blank=True, verbose_name="Birthday")
     company             = models.ForeignKey(
-        Company, on_delete=models.CASCADE, related_name='customers', related_query_name='customer', verbose_name="Company"
+                            Company, on_delete=models.CASCADE, 
+                            related_name='customers', 
+                            related_query_name='customer', 
+                            verbose_name="Company"
     )
     date_created        = models.DateTimeField(auto_now_add=True, verbose_name="Date Created")
     date_updated        = models.DateTimeField(auto_now=True, verbose_name="Date Updated")
@@ -107,10 +110,13 @@ class Customer(models.Model):
         db_table = 'customers'
         verbose_name = "Cliente"
         verbose_name_plural = "Clientes"
-        unique_together = ('email', 'company',)  # Email should be unique per company
+        unique_together = ('phone', 'company',)
 
     def __str__(self):
         return self.name
+    
+    def has_order(self):
+        return any(order.is_paid_and_not_expired() for order in self.orders.all())
 
     def calculate_score(self):
         self.score = self.interactions.aggregate(total_score=models.Sum('score'))['total_score'] or 0

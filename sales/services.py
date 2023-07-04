@@ -1,5 +1,7 @@
 from whatsapp.models import WppConnectSession, TextMessage, ImageMessage, Campaign
 from products.models import WhatsAppProductInfo
+from users.models import Customer
+from sales.models import Order
 from products.serializers import ProductSerializer
 from abc import abstractmethod
 import requests
@@ -15,6 +17,10 @@ class WhatsAppAPIService:
 
     @abstractmethod
     def send_text_message(self):
+        pass
+
+    @abstractmethod
+    def send_image_base64(self):
         pass
 
 class BaileysService(WhatsAppAPIService):
@@ -34,11 +40,11 @@ class WppConnectService(WhatsAppAPIService):
         self.initial_setup()
 
     def initial_setup(self):
-        self.session = self.get_wpp_connect_session()
+        self.session = self.get_client_wpp_session()
         self.token = self.session.session_token
         self.base_url = f'https://apiwpp.brconnect.click/api/{self.session.session_name}/'
         self.headers = {'accept': '*/*','Authorization': f'Bearer {self.token}'}
-
+    
     # [{'id': '4317646281673903', 'price': 56000, 'name': 'Provolone maturado por 2 meses', 'quantity': 1}]    
     def get_products_order_by_message_id(self, message_id):
         """
@@ -76,6 +82,9 @@ class WppConnectService(WhatsAppAPIService):
             raise Exception(f'Product with ID {product["id"]} does not exist')
         return {"message_id": message_id, "base_products": base_products}
     
+    def send_image_base64(self, phone, is_group=None, base64=None, caption=None):
+        ...
+
     def send_text_message(self, phone, is_group=None, message=""):
         """
         Sends a message using the WppConnect API.
@@ -101,7 +110,7 @@ class WppConnectService(WhatsAppAPIService):
         )
         return response.json()
 
-    def get_wpp_connect_session(self):
+    def get_client_wpp_session(self):
         try:
             return WppConnectSession.objects.get(company=self.company)
         except WppConnectSession.DoesNotExist:
@@ -109,61 +118,114 @@ class WppConnectService(WhatsAppAPIService):
 
 class WhatsAppOrderProcessingService:
     """
-    Service to handle orders.
+    Service to handle orders and product recommendations.
     """
-    def __init__(self, company, message_id):
-        self.company            = company
+    def __init__(self, company, message_id, client_phone, client_name):
         self.message_id         = message_id
-        self.whatsapp_client    = self.get_whatsapp_client()
+        self.client_phone       = client_phone
+        self.client_name        = client_name
+        self.company            = company
+        self.client             = self.get_client_instance()
         self.products           = None
-        self.recomendations     = None
+        self.recommendations    = None
+        self.whatsapp_client    = self.get_whatsapp_client()
 
+    def get_client_instance(self):
+        client, created = Customer.objects.get_or_create(
+            phone=self.client_phone,
+            company=self.company,
+            defaults={'name': self.client_name}
+        )
+        return client
+    
     def fetch_products(self):
         self.products = self.whatsapp_client.get_products_order_by_message_id(self.message_id)
+        print(f"Products: {self.products}")
     
     def get_recommendations(self):
         if not self.products:
-            raise Exception('No products fetched. Fetch products before getting recommendations.')
-        categories_list = []
+            self.fetch_products()
 
-        for product in self.products['base_products']:
-            categories = product.categories.all()
-            if len(categories) > 0:
-                for categorie in categories:
-                    categories_list.append(categorie)
+        if not self.products:
+            raise Exception(f'Nenhum produto encontrado no message_id: {self.message_id}')
+        
+        # Verifica se o cliente já tem um pedido
+        if self.client.has_order():
+            print(f"O cliente {self.client.name} já tem um pedido. Não buscando recomendações.")
+            return
+        else:
+            print(f"O cliente {self.client.name} não tem um pedido. Buscando recomendações.")
+            self.create_order()
 
-        if len(categories_list) == 0:
+        categories_list = self._get_categories()
+
+        if not categories_list:
             raise Exception('No categories found for products')
 
-        time.sleep(3)
-        products_for_recomendation = set()
+        products_for_recommendation = self._get_products_for_recommendation(categories_list)
+
+        if not products_for_recommendation:
+            raise Exception('No products found for recommendations')
+        
+        self._send_recommendation_messages(products_for_recommendation)
+
+    def _get_categories(self):
+        """Extracts all categories from the base products."""
+        categories_list = set()
+        for product in self.products['base_products']:
+            categories = product.categories.all()
+            for category in categories:
+                categories_list.add(category)        
+        return list(categories_list)
+
+    def _get_products_for_recommendation(self, categories_list):
+        """Finds products for recommendation based on category affinities."""
+        products_for_recommendation = set()
         for category in categories_list:
             affinities = category.affinities_as_category1.all()
             for affinity in affinities:
                 category2 = affinity.category2
                 products = category2.products.all()
                 for product in products:
-                    try:
-                        if product not in self.products['base_products']:
-                            products_for_recomendation.add(product.whatsapp_info)
-                    except Exception as e:
-                        raise Exception(f'{product} | Error {e}')
-                    
-        if len(products_for_recomendation) == 0:
-            raise Exception('No products found for recommendations')
-        
-        messages = ["😊Abaixo algumas *sugestões* de produtos que *combinam* com a sua *compra:*"]
+                    product_categories = product.categories.all()
+                    if not any(category in categories_list for category in product_categories) and product not in self.products['base_products']:
+                        products_for_recommendation.add(product.whatsapp_info)
+        return products_for_recommendation
 
-        for product in products_for_recomendation:
-            link = product.link if product.link else ""
-            messages.append(f"{product.product.name} - Link: {link}")
 
-        messages.append("Caso tenha interesse, só clicar no link, adicionar ao carrinho e depois enviar que os carrinhos se somam.")
+    def _send_recommendation_messages(self, products_for_recommendation):
+        """Sends recommendation messages for each product."""
+        messages = self._create_recommendation_messages(products_for_recommendation)
         for message in messages:
-            self.send_message(message=message, phone="554185115949")
+            self.send_message(message=message, phone=self.client_phone, is_group=None)
             time.sleep(3)
 
+    def _create_recommendation_messages(self, products_for_recommendation):
+        """Creates recommendation messages for each product."""
+        messages = ["😊Abaixo algumas *sugestões* de produtos que *combinam* com a sua *compra:*"]
+        for product in products_for_recommendation:
+            link = product.link if product.link else ""
+            messages.append(f"*{product.product.name}:* {link}")
+        messages.append("🧀*Interessando*, é só *clicar* no link, *adicionar ao carrinho* e enviar que os carrinhos se somam.")
+        return messages
 
+    def create_order(self):
+        if not self.products:
+            raise Exception('No products fetched. Fetch products before getting recommendations.') 
+
+        # Calcula o total do pedido
+        total = sum(product.price for product in self.products['base_products'])
+
+        # Cria o pedido
+        order = Order.objects.create(
+            company=self.company,
+            customer=self.client,
+            total=total,
+            payment_method='P',  # Exemplo de método de pagamento
+            paid=False,  # O pedido ainda não foi pago
+        )
+
+        return order
 
     def send_message(self, message, phone, is_group=None):
         self.whatsapp_client.send_text_message(message=message, phone=phone, is_group=is_group)
@@ -175,3 +237,4 @@ class WhatsAppOrderProcessingService:
             return BaileysService(self.company)
         else:
             raise Exception('Invalid WhatsApp service')
+
