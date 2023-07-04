@@ -19,6 +19,7 @@ class OrderView(APIView):
                     client_name = serializer.data["client_name"],
                     client_phone = serializer.data["client_phone"],
                 )
+                ipdb.set_trace()
                 whatsapp_order_service.fetch_products()
                 whatsapp_order_service.get_recommendations()
 
