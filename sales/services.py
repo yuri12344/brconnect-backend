@@ -136,7 +136,7 @@ class WhatsAppOrderProcessingService:
             raise Exception('No categories found for products')
 
         time.sleep(3)
-        products_for_recomendation = []
+        products_for_recomendation = set()
         for category in categories_list:
             affinities = category.affinities_as_category1.all()
             for affinity in affinities:
@@ -144,9 +144,10 @@ class WhatsAppOrderProcessingService:
                 products = category2.products.all()
                 for product in products:
                     try:
-                        products_for_recomendation.append(product.whatsapp_info)
+                        products_for_recomendation.add(product.whatsapp_info)
                     except Exception as e:
                         raise Exception(f'{product} | Error {e}')
+                    
         if len(products_for_recomendation) == 0:
             raise Exception('No products found for recommendations')
         
