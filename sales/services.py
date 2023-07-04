@@ -143,7 +143,10 @@ class WhatsAppOrderProcessingService:
                 category2 = affinity.category2
                 products = category2.products.all()
                 for product in products:
-                    products_for_recomendation.append(product.whatsapp_info)
+                    try:
+                        products_for_recomendation.append(product.whatsapp_info)
+                    except WhatsAppProductInfo.DoesNotExist:
+                        raise Exception(f'{product} has no whatsapp info')
 
         messages = ["😊Abaixo algumas *sugestões* de produtos que *combinam* com a sua *compra:*"]
 
