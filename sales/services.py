@@ -143,11 +143,8 @@ class WhatsAppOrderProcessingService:
         return client
     
     def fetch_products(self):
-        ipdb.set_trace()
         self.products       = self.whatsapp_client.get_products_order_by_message_id(self.message_id)
-        self.total_quantity = sum(product.quantity for product in self.products['incoming_order'])
-
-        print(f"Products: {self.products}")
+        self.total_quantity = sum(item['quantity'] for item in self.products['incoming_order'])
     
     def get_recommendations(self):
         if not self.products:
