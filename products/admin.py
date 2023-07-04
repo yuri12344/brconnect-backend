@@ -15,6 +15,12 @@ class WhatsAppProductInfoAdmin(admin.ModelAdmin):
     exclude = ('company',)  # Exclude the company field from the form
     filter_horizontal = ('images',)
     search_fields = ('product__name', 'product__description', 'product__category__name')
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Only set the company when the object is first created
+            obj.company = request.user.company
+        super().save_model(request, obj, form, change)
+
 
 @admin.register(Product)
 class ProductAdmin(ProductClassAdmin):
