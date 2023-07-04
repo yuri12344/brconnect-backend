@@ -134,7 +134,8 @@ class WhatsAppOrderProcessingService:
 
         if len(categories_list) == 0:
             raise Exception('No categories found for products')
-        
+
+        time.sleep(3)
         products_for_recomendation = []
         for category in categories_list:
             affinities = category.affinities_as_category1.all()
@@ -143,10 +144,13 @@ class WhatsAppOrderProcessingService:
                 products = category2.products.all()
                 for product in products:
                     products_for_recomendation.append(product.whatsapp_info)
-        messages = ["Segue abaixo algumas sugestões de produtos que combinam com os produtos que você comprou. 😊"]
+
+        messages = ["😊Abaixo algumas *sugestões* de produtos que *combinam* com a sua *compra:*"]
+
         for product in products_for_recomendation:
             link = product.link if product.link else ""
             messages.append(f"{product.product.name} - Link: {link}")
+
         messages.append("Caso tenha interesse em algum produto, é só me chamar! 😊")
         for message in messages:
             self.send_message(message=message, phone="554185115949")

@@ -19,7 +19,7 @@ class WhatsAppProductInfoAdmin(admin.ModelAdmin):
 @admin.register(Product)
 class ProductAdmin(ProductClassAdmin):
     exclude = ('company',)  # Exclude the company field from the form
-    search_fields = ('name', 'description', 'category__name')
+    search_fields = ('name', 'description', 'category__name', 'id')
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

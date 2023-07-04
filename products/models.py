@@ -64,9 +64,9 @@ class Product(models.Model):
             for categorie in categories:
                 categories_name += categorie.name + ", "
 
-            return f'Produto: {self.name} | Categoria: {categories_name}'
+            return f'id: {self.pk} | Produto: {self.name} | Categoria: {categories_name}'
         else:
-            return f'Produto: {self.name}'
+            return f'id: {self.pk} | Produto: {self.name}'
 
 class ProductImage(models.Model):
     """
