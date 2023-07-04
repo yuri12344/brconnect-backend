@@ -80,7 +80,7 @@ class WppConnectService(WhatsAppAPIService):
                 base_products.append(base_product)
         except WhatsAppProductInfo.DoesNotExist:
             raise Exception(f'Product with ID {product["id"]} does not exist')
-        return {"message_id": message_id, "base_products": base_products}
+        return {"message_id": message_id, "base_products": base_products, "incoming_order": product_data}
     
     def send_image_base64(self, phone, is_group=None, base64=None, caption=None):
         ...
@@ -125,11 +125,11 @@ class WhatsAppOrderProcessingService:
         self.client_phone       = client_phone
         self.client_name        = client_name
         self.company            = company
-        self.client             = self.get_client_instance()
         self.products           = None
         self.recommendations    = None
-        self.whatsapp_client    = self.get_whatsapp_client()
         self.total_quantity     = None
+        self.client             = self.get_client_instance()
+        self.whatsapp_client    = self.get_whatsapp_client()
 
     def get_client_instance(self):
         if not self.client_phone or not self.company:
@@ -143,8 +143,10 @@ class WhatsAppOrderProcessingService:
         return client
     
     def fetch_products(self):
+        ipdb.set_trace()
         self.products       = self.whatsapp_client.get_products_order_by_message_id(self.message_id)
-        self.total_quantity = sum(product['quantity'] for product in self.products['base_products'])
+        self.total_quantity = sum(product.quantity for product in self.products['incoming_order'])
+
         print(f"Products: {self.products}")
     
     def get_recommendations(self):
