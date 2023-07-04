@@ -144,7 +144,8 @@ class WhatsAppOrderProcessingService:
                 products = category2.products.all()
                 for product in products:
                     try:
-                        products_for_recomendation.add(product.whatsapp_info)
+                        if product not in self.products['base_products']:
+                            products_for_recomendation.add(product.whatsapp_info)
                     except Exception as e:
                         raise Exception(f'{product} | Error {e}')
                     
