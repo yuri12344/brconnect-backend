@@ -163,7 +163,7 @@ class WhatsAppOrderProcessingService:
             self.create_order()
 
         categories_list = self._get_categories()
-
+        time.sleep(3)
         if not categories_list:
             if self.total_quantity == 1:
                 msg = "💳Para melhorar o *custo benefício* de sua compra, sugerimos que *adicione mais um produto* por conta do *valor do frete.*🧀"
