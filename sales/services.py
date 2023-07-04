@@ -121,6 +121,7 @@ class WhatsAppOrderProcessingService:
     Service to handle orders and product recommendations.
     """
     def __init__(self, company, message_id, client_phone, client_name):
+        ipdb.set_trace()
         self.message_id         = message_id
         self.client_phone       = client_phone
         self.client_name        = client_name
