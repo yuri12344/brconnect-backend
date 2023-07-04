@@ -132,6 +132,9 @@ class WhatsAppOrderProcessingService:
         self.total_quantity     = sum(product['quantity'] for product in self.products['base_products'])
 
     def get_client_instance(self):
+        if not self.client_phone or not self.company:
+            raise ValueError("Client phone and company must be set before getting client instance")
+
         client, created = Customer.objects.get_or_create(
             phone=self.client_phone,
             company=self.company,
