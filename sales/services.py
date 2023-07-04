@@ -121,7 +121,6 @@ class WhatsAppOrderProcessingService:
     Service to handle orders and product recommendations.
     """
     def __init__(self, company, message_id, client_phone, client_name):
-        ipdb.set_trace()
         self.message_id         = message_id
         self.client_phone       = client_phone
         self.client_name        = client_name
@@ -130,7 +129,7 @@ class WhatsAppOrderProcessingService:
         self.products           = None
         self.recommendations    = None
         self.whatsapp_client    = self.get_whatsapp_client()
-        self.total_quantity     = sum(product['quantity'] for product in self.products['base_products'])
+        self.total_quantity     = None
 
     def get_client_instance(self):
         if not self.client_phone or not self.company:
@@ -144,7 +143,8 @@ class WhatsAppOrderProcessingService:
         return client
     
     def fetch_products(self):
-        self.products = self.whatsapp_client.get_products_order_by_message_id(self.message_id)
+        self.products       = self.whatsapp_client.get_products_order_by_message_id(self.message_id)
+        self.total_quantity = sum(product['quantity'] for product in self.products['base_products'])
         print(f"Products: {self.products}")
     
     def get_recommendations(self):
