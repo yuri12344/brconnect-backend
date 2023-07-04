@@ -145,8 +145,8 @@ class WhatsAppOrderProcessingService:
                 for product in products:
                     try:
                         products_for_recomendation.append(product.whatsapp_info)
-                    except WhatsAppProductInfo.DoesNotExist:
-                        raise Exception(f'{product} has no whatsapp info')
+                    except Exception as e:
+                        raise Exception(f'{product} | Error {e}')
         if len(products_for_recomendation) == 0:
             raise Exception('No products found for recommendations')
         
