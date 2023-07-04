@@ -13,13 +13,13 @@ class OrderView(APIView):
             if not request.user.company:
                 return Response({"message": "User has no company"}, status=400)
             try:
+                ipdb.set_trace()
                 whatsapp_order_service = WhatsAppOrderProcessingService(
                     company = request.user.company,
                     message_id = serializer.data["message_id"],
                     client_name = serializer.data["client_name"],
                     client_phone = serializer.data["client_phone"],
                 )
-                ipdb.set_trace()
                 whatsapp_order_service.fetch_products()
                 whatsapp_order_service.get_recommendations()
 
