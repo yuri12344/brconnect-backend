@@ -153,6 +153,7 @@ class WhatsAppOrderProcessingService:
         if not self.products:
             raise Exception(f'Nenhum produto encontrado no message_id: {self.message_id}')
         
+        ipdb.set_trace()
         # Verifica se o cliente já tem um pedido
         if self.client.has_order():
             print(f"O cliente {self.client.name} já tem um pedido. Não buscando recomendações.")
@@ -169,7 +170,6 @@ class WhatsAppOrderProcessingService:
                 self.send_message(message=msg, phone=self.client_phone, is_group=None)
                 return
             raise Exception('No categories found for products')
-        ipdb.set_trace()
         products_for_recommendation = self._get_products_for_recommendation(categories_list)
 
         if not products_for_recommendation:
