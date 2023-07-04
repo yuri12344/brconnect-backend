@@ -1,19 +1,28 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from django.contrib.auth import authenticate
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
+from .serializers import OrderDataSerializer
+from .services import WhatsAppOrderProcessingService
+import ipdb
 
 class OrderView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
-        username = request.data.get("username")
-        password = request.data.get("password")
-        user = authenticate(username=username, password=password)
-        if user:
-            return Response({"message": "Successful login!"})
+        serializer = OrderDataSerializer(data=request.data)
+        if serializer.is_valid():
+            if not request.user.company:
+                return Response({"message": "User has no company"}, status=400)
+            try:
+                whatsapp_order_service = WhatsAppOrderProcessingService(
+                    company = request.user.company,
+                    message_id = serializer.data["message_id"]
+                )
+                whatsapp_order_service.fetch_products()
+                whatsapp_order_service.get_recommendations()
+
+                return Response({"message": "data"})
+            except Exception as e:
+                return Response({"message": str(e)}, status=400)
+        
         else:
-            return Response({"error": "Wrong username or password"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=400)

@@ -57,7 +57,8 @@ class Company(models.Model):
     industry                = models.CharField(max_length=255, choices=INDUSTRY_CHOICES, blank=True, null=True, verbose_name="Indústria")
     order_expiration_days   = models.PositiveIntegerField(default=7, verbose_name="Dias para expiração do pedido não pago e não enviado")
     employee_count          = models.IntegerField(choices=EMPLOYEE_COUNT_CHOICES, blank=True, null=True, verbose_name="Quantidade de Funcionários")
-    
+    whatsapp_service        = models.CharField(max_length=255, choices=[('wppconnect', 'WppConnect'), ('baileys', 'Baileys')], default='wppconnect')
+
     class Meta:
         db_table = 'companies'
         verbose_name = "Empresa"
