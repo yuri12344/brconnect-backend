@@ -95,7 +95,9 @@ class ProductOrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    exclude = ('company',)  # Exclude the company field from the form
+    exclude = ('company',) 
+    search_fields = ['customer__name', 'payment_method', 'paid', 'company__name', 'coupon__code']
+
     inlines = [ProductOrderItemInline]
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):

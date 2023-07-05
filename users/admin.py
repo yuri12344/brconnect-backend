@@ -36,6 +36,7 @@ class CompanyAdmin(admin.ModelAdmin):
 class CustomerAdmin(admin.ModelAdmin):
     exclude = ('company',)  # Exclude the company field from the form
     filter_horizontal = ('preferences', 'purchase_history',)
+    search_fields = ('name', 'phone',)
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
