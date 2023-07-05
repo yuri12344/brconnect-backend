@@ -104,4 +104,4 @@ class WhatsAppProductInfo(models.Model):
         verbose_name_plural = "Produtos no WhatsApp"
 
     def __str__(self):
-        return f'Product whats: {self.product.name}'
+        return f'ID: {self.pk} | Product whats: {self.product.name}'
