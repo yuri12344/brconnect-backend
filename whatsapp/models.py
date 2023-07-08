@@ -1,14 +1,21 @@
 from users.models import Company
 from django.db import models
+from urllib.parse import urljoin
+from django.conf import settings
 
 
 class WhatsAppSession(models.Model):
+    WHATS_API_PROVIDER = (
+        ('wppconnect', 'WppConnect'),
+        ('baileys', 'Baileys'),
+    )
     """
     A WhatsAppSession represents a WhatsApp Web session for a company.
     """
     name = models.CharField(max_length=255, verbose_name="Nome")
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='whatsapp_sessions')
     phone_number = models.CharField(max_length=20, verbose_name="Número de Telefone")
+    whatsapp_api_service = models.CharField(max_length=20, choices=WHATS_API_PROVIDER, default='wppconnect')
 
     class Meta:
         abstract = True
@@ -21,7 +28,15 @@ class WppConnectSession(WhatsAppSession):
     A WppConnectSession represents a WppConnect WhatsApp Web session for a company.
     """
     session_token = models.CharField(max_length=255, verbose_name="Token da Sessão")
-    session_name = models.CharField(max_length=255, verbose_name="Nome da Sessão")
+    whatsapp_api_session = models.CharField(max_length=255, verbose_name="Nome da Sessão")
+
+    @property
+    def url(self):
+        return urljoin(settings.WPP_CONNECT_URL, self.whatsapp_api_session)
+
+    @property
+    def headers(self):
+        return {'accept': '*/*','Authorization': f'Bearer {self.session_token}'}
 
     class Meta:
         db_table = 'wppconnect_sessions'

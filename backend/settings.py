@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+from decouple import config
 from pathlib import Path
 import os
 
@@ -86,13 +87,14 @@ sqlite = {
 }
 
 mysql = {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'brconnect',
-        'USER': 'brconnect',
-        'PASSWORD': 'e45kqJKBxfvrTHKtWdKF',
-        'HOST': '168.138.133.69',   
-        'PORT': '3306',       
+        'ENGINE':   'django.db.backends.mysql',
+        'NAME':     config('DATABASE_NAME'),
+        'USER':     config('DATABASE_USER'),
+        'PASSWORD': config('DATABASE_PASSWORD'),
+        'HOST':     config('DATABASE_HOST'),
+        'PORT':     config('DATABASE_PORT'),
 }
+
 
 DATABASES = {
     'default': mysql
@@ -161,3 +163,5 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
+
+WPP_CONNECT_URL = config('WPP_CONNECT_URL')
