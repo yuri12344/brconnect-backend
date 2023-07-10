@@ -86,8 +86,8 @@ sqlite = {
         'NAME': BASE_DIR / 'db.sqlite3',
 }
 
-mysql = {
-        'ENGINE':   'django.db.backends.mysql',
+postgresql = {
+        'ENGINE':   'django.db.backends.postgresql',
         'NAME':     config('DATABASE_NAME'),
         'USER':     config('DATABASE_USER'),
         'PASSWORD': config('DATABASE_PASSWORD'),
@@ -97,7 +97,7 @@ mysql = {
 
 
 DATABASES = {
-    'default': mysql
+    'default': postgresql
 }
 
 
