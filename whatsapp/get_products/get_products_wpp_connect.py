@@ -52,26 +52,24 @@ def seek_products():
 
 
 def create_products():
-    filename = './whatsapp/products/products.json'
+    filename = './whatsapp/get_products/products.json'
     with open(filename) as f:
         products = json.load(f)
     print(products)
-    magnata_user = User.objects.get_or_create(username='magnatadosqueijos', password='Buceta50!')
-    company = Company.objects.get_or_create(name='Magnata dos Queijos', owner=magnata_user[0])
+    magnata_user = User.objects.get_or_create(username='magnatadosqueijos')[0]
+    company = magnata_user.company
 
     for product in products:
-        retailer_id = product['retailer_id']
         product_id = product['id']
         price = int(product['price']) / 1000
-        product_db = Product.objects.get_or_create(name=product['name'], price=price, description=product['description'], company=company[0])
+        product_db = Product.objects.get_or_create(name=product['name'], price=price, description=product['description'], company=company)
         
         WhatsAppProductInfo.objects.get_or_create(
             id=product_id,
             name=product['name'], 
             description=product['description'], 
             product=product_db[0], 
-            company=company[0], 
-            retailer_id=retailer_id,
+            company=company, 
         )
 
 

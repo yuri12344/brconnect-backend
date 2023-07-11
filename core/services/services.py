@@ -1,0 +1,1 @@
+ALERTS = {"102": "Produto do whats app nao encontrado pelo ID Meta fornecido, criado através do fluxo do pedido"}

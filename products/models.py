@@ -50,6 +50,7 @@ class Product(models.Model):
     active = models.BooleanField(default=True, verbose_name="Ativo")
     stock = models.IntegerField(validators=[MinValueValidator(0)], default=999, verbose_name="Estoque")
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='products', verbose_name="Empresa")
+    retailer_id = models.CharField(max_length=255, verbose_name="Código do item", null=True, blank=True)
     history = HistoricalRecords(inherit=True)
 
     class Meta:
@@ -89,11 +90,10 @@ class WhatsAppProductInfo(models.Model):
     """
     A WhatsAppProductInfo represents specific information related to a product on WhatsApp.
     """
+    id = models.CharField(max_length=255, verbose_name="ID produto Meta", primary_key=True)
     name = models.CharField(max_length=255, verbose_name="Nome do Produto no WhatsApp", null=True, blank=True)
     description = models.TextField(verbose_name="Descrição do Produto no WhatsApp", null=True, blank=True)
     product = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='whatsapp_info')
-    retailer_id = models.CharField(max_length=255, verbose_name="Código do item", null=True, blank=True)
-    id = models.CharField(max_length=255, verbose_name="ID produto Meta", primary_key=True)
     link = models.URLField(verbose_name="Link no Whatsapp", null=True, blank=True)
     images = models.ManyToManyField(ProductImage, blank=True, related_name='whatsapp_products')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='whatsapp_products', verbose_name="Empresa")

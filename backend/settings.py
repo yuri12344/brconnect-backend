@@ -150,11 +150,13 @@ MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+"""
 SESSION_COOKIE_DOMAIN = 'backend.brconnect.click'
 
 CSRF_COOKIE_DOMAIN = 'backend.brconnect.click'
 
-CSRF_TRUSTED_ORIGINS = ['http://backend.brconnect.click', 'https://backend.brconnect.click']
+"""
+CSRF_TRUSTED_ORIGINS = ['http://backend.brconnect.click', 'https://backend.brconnect.click', 'https://7921-2804-d55-554f-a300-afe2-ddfa-3b7b-dca3.ngrok-free.app']
 
 LANGUAGE_CODE = 'pt-br'
 

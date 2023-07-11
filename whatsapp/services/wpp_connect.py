@@ -1,42 +1,15 @@
-from .models import WppConnectSession
-from products.models import WhatsAppProductInfo
+from ..models import WppConnectSession
 from users.models import Company
-from django.conf import settings
-from abc import abstractmethod
-from urllib.parse import urljoin
+from . import WhatsAppAPIService
 import logging
 import requests
+
 import ipdb
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 logger = logging.getLogger(__name__)
 
-
-class WhatsAppAPIService:
-    @abstractmethod
-    def fetch_products(self):
-        pass
-
-    @abstractmethod
-    def send_message(self):
-        pass
-
-    @abstractmethod
-    def send_image_base64(self):
-        pass
-
-
-
-class BaileysService(WhatsAppAPIService):
-    def fetch_products(self):
-        ...
-    
-    def send_message(self):
-        ...
-
-    def send_image_base64(self):
-        ...
 
 
 class WppConnectService(WhatsAppAPIService):

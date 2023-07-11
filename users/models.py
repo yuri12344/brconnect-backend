@@ -1,21 +1,47 @@
-from rest_framework.authtoken.models import Token
 from django.core.validators import RegexValidator
-from django.contrib.auth.models import User
-from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
+from django.db.models.signals import post_save
+from django.contrib.auth.models import User
+from django.dispatch import receiver
+from django.db import models
 
 phone_regex = RegexValidator(
     regex=r'^\+?1?\d{9,15}$',
     message="Telefone deve ser inserido no formato correto: '+554187941579'. Até 15 digitos."
 )
 
+STATE_CHOICES = [
+    ('AC', 'Acre'),
+    ('AL', 'Alagoas'),
+    ('AP', 'Amapá'),
+    ('AM', 'Amazonas'),
+    ('BA', 'Bahia'),
+    ('CE', 'Ceará'),
+    ('DF', 'Distrito Federal'),
+    ('ES', 'Espírito Santo'),
+    ('GO', 'Goiás'),
+    ('MA', 'Maranhão'),
+    ('MT', 'Mato Grosso'),
+    ('MS', 'Mato Grosso do Sul'),
+    ('MG', 'Minas Gerais'),
+    ('PA', 'Pará'),
+    ('PB', 'Paraíba'),
+    ('PR', 'Paraná'),
+    ('PE', 'Pernambuco'),
+    ('PI', 'Piauí'),
+    ('RJ', 'Rio de Janeiro'),
+    ('RN', 'Rio Grande do Norte'),
+    ('RS', 'Rio Grande do Sul'),
+    ('RO', 'Rondônia'),
+    ('RR', 'Roraima'),
+    ('SC', 'Santa Catarina'),
+    ('SP', 'São Paulo'),
+    ('SE', 'Sergipe'),
+    ('TO', 'Tocantins'),
+]
+
+
 class Company(models.Model):
-    """
-    A Company represents a company.
-    """
     INDUSTRY_CHOICES = [
         ('beauty', 'Beleza'),
         ('ecommerce', 'E-commerce'),
@@ -42,9 +68,9 @@ class Company(models.Model):
     name                    = models.CharField(max_length=255, verbose_name="Nome", blank=True, null=True)
     street                  = models.CharField(max_length=255, verbose_name="Rua", blank=True, null=True)
     city                    = models.CharField(max_length=255, verbose_name="Cidade", blank=True, null=True)
-    state                   = models.CharField(max_length=255, verbose_name="Estado", blank=True, null=True)
+    state                   = models.CharField(max_length=2, choices=STATE_CHOICES, null=True, blank=True, verbose_name="Estado")
     zip_code                = models.CharField(max_length=255, verbose_name="CEP", blank=True, null=True)
-    phone                   = models.CharField(validators=[phone_regex], max_length=17, blank=True, null=True, verbose_name="Numero de telefone")
+    phone                   = models.CharField(max_length=17, blank=True, null=True, verbose_name="Numero de telefone")
     email                   = models.EmailField(max_length=255, verbose_name="Email", blank=True, null=True)
     website                 = models.URLField(max_length=255, null=True, blank=True, verbose_name="Website")
     description             = models.TextField(verbose_name="Descrição", blank=True, null=True)
@@ -66,39 +92,54 @@ class Company(models.Model):
 
     def __str__(self):
         return self.name
+    
+    
+class Region(models.Model):
+    regiao      = models.CharField(max_length=255, verbose_name="Regiao")
+    cost        = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Custo frete')
+    company     = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='regions', verbose_name="Empresa")
+ 
+    class Meta:
+        db_table = 'regions'
+        verbose_name = "Região"
+        verbose_name_plural = "Regiões"
+
+    def __str__(self):
+        return self.regiao
+
 
 class Customer(models.Model):
-    """
-    A Customer represents a customer.
-    """
     GENDER_CHOICES = [
-        ('M', 'Male'),
-        ('F', 'Female'),
-        ('O', 'Other'),
+        ('M', 'Masculino'),
+        ('F', 'Feminino'),
+        ('O', 'Outro'),
     ]
     name                = models.CharField(max_length=255, verbose_name="Name")
-    whatsapp            = models.CharField(max_length=20, null=True, blank=True, verbose_name="WhatsApp Number")
+    whatsapp            = models.CharField(max_length=20, null=True, blank=True, verbose_name="WhatsApp")
+    phone               = models.CharField(validators=[phone_regex], max_length=17, blank=True, verbose_name="Numero de telefone") # validators should be a list
+    street              = models.CharField(max_length=255, null=True, blank=True, verbose_name="Logradouro")
+    number              = models.CharField(max_length=255, null=True, blank=True, verbose_name="Número")
+    complement          = models.CharField(max_length=255, null=True, blank=True, verbose_name="Complemento")
+    neighborhood        = models.CharField(max_length=255, null=True, blank=True, verbose_name="Bairro")
+    zip                 = models.CharField(max_length=255, null=True, blank=True, verbose_name="CEP")
+    city                = models.CharField(max_length=255, null=True, blank=True, verbose_name="Cidade")
+    state                   = models.CharField(max_length=2, choices=STATE_CHOICES, null=True, blank=True, verbose_name="Estado")
+    region              = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Regiao")
     email               = models.EmailField(max_length=255, null=True, blank=True, verbose_name="Email")    
-    street              = models.CharField(max_length=255, null=True, blank=True, verbose_name="Street")
-    state               = models.CharField(max_length=255, null=True, blank=True, verbose_name="State")
-    city                = models.CharField(max_length=255, null=True, blank=True, verbose_name="City")
-    zip                 = models.CharField(max_length=255, null=True, blank=True, verbose_name="Zip Code")
-    phone               = models.CharField(validators=[phone_regex], max_length=17, blank=True, verbose_name="Phone Number") # validators should be a list
     birthday            = models.DateField(null=True, blank=True, verbose_name="Birthday")
-    company             = models.ForeignKey(
-                            Company, on_delete=models.CASCADE, 
-                            related_name='customers', 
-                            related_query_name='customer', 
-                            verbose_name="Company"
-    )
     date_created        = models.DateTimeField(auto_now_add=True, verbose_name="Date Created")
     date_updated        = models.DateTimeField(auto_now=True, verbose_name="Date Updated")
     score               = models.IntegerField(default=0, verbose_name="Score")
     age                 = models.IntegerField(null=True, blank=True, verbose_name="Idade")
     gender              = models.CharField(max_length=1, choices=GENDER_CHOICES, null=True, blank=True, verbose_name="Gênero")
-    whatsapp            = models.CharField(max_length=20, null=True, blank=True, verbose_name="WhatsApp Number")
     interaction_history = models.TextField(null=True, blank=True, verbose_name="Histórico de Interações")
-    favorite_product = models.ForeignKey(
+    company             = models.ForeignKey(
+        Company, on_delete=models.CASCADE, 
+        related_name='customers', 
+        related_query_name='customer', 
+        verbose_name="Company"
+    )
+    favorite_product    = models.ForeignKey(
         'products.Product', on_delete=models.SET_NULL, null=True, blank=True, related_name='loved_by', verbose_name="Produto Favorito"
     )
     purchase_history    = models.ManyToManyField(
@@ -117,6 +158,9 @@ class Customer(models.Model):
     
     def has_order(self):
         return any(order.is_paid_and_not_expired() for order in self.orders.all())
+
+    def has_address(self):
+        return bool(self.street and self.state and self.city and self.zip)
 
     def calculate_score(self):
         self.score = self.interactions.aggregate(total_score=models.Sum('score'))['total_score'] or 0

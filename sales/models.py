@@ -1,6 +1,6 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from simple_history.models import HistoricalRecords 
-from products.models import Product, Category
+from products.models import Product, Category, WhatsAppProductInfo
 from datetime import datetime, timedelta
 from users.models import Customer, Company
 from django.db import models
@@ -47,16 +47,17 @@ class Order(models.Model):
             return not self.paid and timezone.now() < self.expires_at
 
     def __str__(self):
-        return f'Pedido {self.id} para {self.customer.name}'
+        return f'Pedido {self.pk} para {self.customer.name}'
 
 
 class ProductOrderItem(models.Model):
     """
     A ProductOrderItem represents a product in an order.
     """
-    order       = models.ForeignKey(Order, related_name='product_order_items', on_delete=models.CASCADE, verbose_name="Pedido")
-    product     = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Produto")
-    quantity    = models.PositiveIntegerField(verbose_name="Quantidade", default=1)
+    order           = models.ForeignKey(Order, related_name='product_order_items', on_delete=models.CASCADE, verbose_name="Pedido")
+    product         = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Produto", null=True, blank=True)
+    product_whats   = models.ForeignKey(WhatsAppProductInfo, on_delete=models.CASCADE, verbose_name="Produto WhatsApp", null=True, blank=True)
+    quantity        = models.PositiveIntegerField(verbose_name="Quantidade", default=1)
 
     class Meta:
         db_table = 'product_order_items'
