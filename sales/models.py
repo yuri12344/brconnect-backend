@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from users.models import Customer, Company
 from django.db import models
 from django.utils import timezone
-
+from typing import List
 
 def get_expiration_date():
     return datetime.now() + timedelta(days=7)
@@ -45,6 +45,16 @@ class Order(models.Model):
 
     def is_paid_and_not_expired(self):
             return not self.paid and timezone.now() < self.expires_at
+
+    @staticmethod
+    def calculate_total(product_order_items: List['ProductOrderItem']):
+        total = 0
+        for item in product_order_items:
+            if item.product_whats:
+                total += item.product_whats.product.price * item.quantity
+            elif item.product:
+                total += item.product.price * item.quantity
+        return total
 
     def __str__(self):
         return f'Pedido {self.pk} para {self.customer.name}'

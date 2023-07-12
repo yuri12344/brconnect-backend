@@ -4,6 +4,7 @@ from core.services.services import ALERTS
 from .types import ProductType
 from typing import List
 import logging
+import time
 import ipdb
 
 
@@ -40,13 +41,23 @@ class HandleOrderFactory:
 
         products_list_order: List[ProductType] = self.handler.get_order_by_message_id(message_id=self.request.data['message_id'])
         order_manager = OrderManager(self.request, customer)
-
-
-        products_wts_info = order_manager.get_or_create_whatsapp_product_info_db(products_list_order)
-        ipdb.set_trace()
-        if customer.has_order():
-            order_manager.update_order(products_wts_info)
+        
+        # Messages creating
+        order_received_msg = f"Oii {customer.name} !  \n\n*Pedido recebido com sucesso, obrigado!* 🧀👍\n\n"
+        if not customer.has_address():
+            order_received_msg += "Me envie o *endereço de entrega com*: \nRua, número, bairro, cidade e estado. 🧀 "
         else:
-            order_manager.create_order(products_wts_info)
+            order_received_msg += f"*É esse mesmo o endereço?* \n\n{customer.street}, {customer.city} - {customer.state} \n\n*Confirma pra mim por favor*"
+        order_manager.create_customer_message(order_received_msg)
 
+        if customer.has_order():
+            order_manager.update_order(products_list_order)
+            order_manager.create_customer_message("Seu pedido foi atualizado com sucesso! 🧀👍")
+        else:
+            order_manager.create_order(products_list_order)
+            order_manager.create_customer_message("Seu pedido foi criado com sucesso! 🧀👍")
+
+        for message in order_manager.messages:
+            self.handler.whatsapp_client.send_message(message=message, phone=customer.whatsapp)
+            time.sleep(3)
 
