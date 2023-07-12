@@ -46,7 +46,7 @@ class ProductAdmin(ProductClassAdmin):
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     exclude = ('company',)  # Exclude the company field from the form
-    filter_horizontal = ('products',)
+    filter_horizontal = ('products','featured_products')
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
