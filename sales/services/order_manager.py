@@ -17,7 +17,7 @@ class OrderManager:
         self.request        = request
         self.customer       = customer # I decided to include the customer here because I think will need more calls
         self.order          = None
-        self.recomendations = None
+        self.recomendations = []
         self.handler        = handler
         self.messages       = []
 
@@ -151,7 +151,6 @@ class OrderManager:
             order_categorie_affinity = list(chain.from_iterable(category.affinities_as_category1.all() for category in order_categories))
         
 
-        recomendations = []
         for category_afinity in order_categorie_affinity:
             if not category_afinity.category2 in order_categories:
                 featured_products           = list((category_afinity.category2.featured_products.all()))
@@ -165,9 +164,8 @@ class OrderManager:
                         'image_base64': base64_image,
                         'whats_app_products_links': whats_app_products_links
                     }
-                    recomendations.append(recomendation_data)
+                    self.recomendations.append(recomendation_data)
                 
-        self.recomendations = recomendations
 
     def send_recomendations(self):
         if not self.recomendations:
@@ -175,7 +173,8 @@ class OrderManager:
         msg = "Ola obrigado por comprar, segue as recomendações: \n\n"
         for recomendation in self.recomendations:
             for link in recomendation['whats_app_products_links']:
-                msg += link
+                if link:
+                    msg += link
         phone = self.customer.whatsapp 
         filename ="ok"
         caption = msg
