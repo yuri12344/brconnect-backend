@@ -172,8 +172,18 @@ class OrderManager:
     def send_recomendations(self):
         if not self.recomendations:
             raise ValueError("No existing recomendations found in send_recomendations.")
-        ipdb.set_trace()
-        msg = "Ola obrigado por comprar, segue as recomendações"
+        msg = "Ola obrigado por comprar, segue as recomendações: \n\n"
         for recomendation in self.recomendations:
             for link in recomendation['whats_app_products_links']:
-                self.create_customer_message(link)
+                msg += link
+        phone = self.customer.whatsapp 
+        filename ="ok"
+        caption = msg
+        base64 = recomendation['image_base64']
+
+        self.handler.whatsapp_client.send_image_base64(
+            phone=phone,
+            filename=filename,
+            caption=caption,
+            base64=base64
+        )
