@@ -25,7 +25,7 @@ class HandleOrderFactory:
         if handler_class is None:
             raise ValueError("Invalid provider")
         return handler_class(company=self.request.user.company, whatsapp_api_session=self.whatsapp_api_session)
-
+    
 
     def handle_order(self):
         customer_info = {
@@ -40,7 +40,7 @@ class HandleOrderFactory:
             raise ValueError(f"Customer not found and could not be created for this order, with name: {self.request.data['client_name']} and whatsapp: {self.request.data['client_phone']}")
 
         products_list_order: List[ProductType] = self.handler.get_order_by_message_id(message_id=self.request.data['message_id'])
-        order_manager = OrderManager(self.request, customer)
+        order_manager = OrderManager(self.request, customer, self.handler)
         
         # Messages creating
         order_received_msg = f"Oii {customer.name} !  \n\n*Pedido recebido com sucesso, obrigado!* 🧀👍\n\n"
@@ -58,8 +58,10 @@ class HandleOrderFactory:
             order_manager.create_order(products_list_order)
             order_manager.create_customer_message("Seu pedido foi criado com sucesso! 🧀👍")
 
-        for message in order_manager.messages:
-            self.handler.whatsapp_client.send_message(message=message, phone=customer.whatsapp)
-            time.sleep(3)
+        # Send message queue
+        # order_manager.send_messages(handler=self.handler, delay_s = 3)
 
+        order_manager.get_recomendations()
+        order_manager.send_recomendations()
         
+
