@@ -151,7 +151,7 @@ class OrderManager:
             order_categorie_affinity = list(chain.from_iterable(category.affinities_as_category1.all() for category in order_categories))
         
 
-        recomendations = {}
+        recomendations = []
         for category_afinity in order_categorie_affinity:
             if not category_afinity.category2 in order_categories:
                 featured_products           = list((category_afinity.category2.featured_products.all()))
