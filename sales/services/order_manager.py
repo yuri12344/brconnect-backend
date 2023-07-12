@@ -34,9 +34,17 @@ class OrderManager:
         product_objects = []
         for product in products:
             try:
+                # Busca por ID no WhatsAppProductInfo
                 product_objects.append(WhatsAppProductInfo.objects.get(id=product.id))
             except WhatsAppProductInfo.DoesNotExist:
-                product_objects.append(Product.objects.get(id=product.id))
+                try:
+                    # Busca por nome no WhatsAppProductInfo se a busca por ID falhar
+                    product_objects.append(WhatsAppProductInfo.objects.get(name=product.name))
+                except WhatsAppProductInfo.DoesNotExist:
+                    try:
+                        product_objects.append(Product.objects.get(name=product.name))
+                    except Product.DoesNotExist:
+                        raise ValueError(f"Product not found with name: {product.name}")
 
         order = Order(
             total=0,
@@ -86,9 +94,18 @@ class OrderManager:
         product_objects = []
         for product in products:
             try:
+                # Busca por ID no WhatsAppProductInfo
                 product_objects.append(WhatsAppProductInfo.objects.get(id=product.id))
             except WhatsAppProductInfo.DoesNotExist:
-                product_objects.append(Product.objects.get(id=product.id))
+                try:
+                    # Busca por nome no WhatsAppProductInfo se a busca por ID falhar
+                    product_objects.append(WhatsAppProductInfo.objects.get(name=product.name))
+                except WhatsAppProductInfo.DoesNotExist:
+                    try:
+                        product_objects.append(Product.objects.get(name=product.name))
+                    except Product.DoesNotExist:
+                        raise ValueError(f"Product not found with name: {product.name}")
+
 
         for product in product_objects:
             if isinstance(product, WhatsAppProductInfo):

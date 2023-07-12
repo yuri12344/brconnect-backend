@@ -53,7 +53,8 @@ class HandleOrderFactory:
         if customer.has_order():
             order_manager.update_order(products_list_order)
             order_manager.create_customer_message("Seu pedido foi atualizado com sucesso! 🧀👍")
-        else:
+
+        elif not customer.has_order():
             order_manager.create_order(products_list_order)
             order_manager.create_customer_message("Seu pedido foi criado com sucesso! 🧀👍")
 
@@ -61,3 +62,4 @@ class HandleOrderFactory:
             self.handler.whatsapp_client.send_message(message=message, phone=customer.whatsapp)
             time.sleep(3)
 
+        
