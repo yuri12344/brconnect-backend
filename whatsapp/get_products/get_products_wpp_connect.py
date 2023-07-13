@@ -50,6 +50,21 @@ def seek_products():
     except Exception as e:
         print(f'Erro ao salvar os resultados em um arquivo JSON: {str(e)}')
 
+#Sanitize json method products
+def sanitize():
+    with open("produtos.json") as file:
+        produtos = json.load(file)
+        result = []
+        for produto in produtos:
+            result.append({
+                "id": produtos[produto]["response"]["id"],
+                "name": produtos[produto]["response"]["name"],
+                "description": produtos[produto]["response"]["description"],
+                "price": produtos[produto]["response"]["price"],
+                "retailer_id": produtos[produto]["response"]["retailer_id"],
+            })
+        with open('produtos_sanitizados.json', 'w', encoding='utf-8') as f:
+            json.dump(result, f, ensure_ascii=False)
 
 def create_products():
     filename = './whatsapp/get_products/products.json'
