@@ -85,7 +85,7 @@ class ProductImage(models.Model):
         verbose_name_plural = "Imagens do Produto"
 
     def __str__(self):
-        return self.url
+        return f'Image from: {self.product.name}'
 
 class WhatsAppProductInfo(models.Model):
     """
