@@ -44,12 +44,12 @@ class HandleOrderFactory:
 
         if customer.has_order():
             order_manager.update_order(products_list_order)
+            return {'status': 'order updated'}
 
         elif not customer.has_order():
             order_manager.create_order(products_list_order)
 
         order_manager.get_recomendations()
-        time.sleep(15)
         order_manager.send_recomendations()
         
 

@@ -179,8 +179,10 @@ class OrderManager:
 
             for recomendation in self.recomendations:
                 caption = recomendation['text_recomendation'] + '\n\n'
-                caption += recomendation['whats_app_products_links']
+                caption += recomendation['whats_app_products_links'] if recomendation['whats_app_products_links'] else ""
                 image_path = recomendation['image_path']
+
+                time.sleep(5)
                 with open(image_path, 'rb') as image_file:
                     base64_image = base64.b64encode(image_file.read()).decode()
                     self.handler.whatsapp_client.send_image_base64(
