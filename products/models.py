@@ -40,7 +40,7 @@ class CategoryAffinity(models.Model):
         unique_together = ('category1', 'category2')  # Each pair of categories should have at most one affinity
 
     def __str__(self):
-        return f'Affinity from {self.category1.name} | {self.category1.alias} to {self.category2.name} | {self.category2.alias}'
+        return f'Afinidade da categoria: {self.category1.name} - {self.category1.alias} - Para categoria: {self.category2.name} - {self.category2.alias}'
 
 class Product(models.Model):
     """

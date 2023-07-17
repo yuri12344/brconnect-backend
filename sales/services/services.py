@@ -43,7 +43,7 @@ class HandleOrderFactory:
         order_manager = OrderManager(self.request, customer, self.handler)
         if customer.has_order():
             order_manager.update_order(products_list_order)
-            # return {'status': 'order updated'}
+            return {'status': 'order updated'}
 
         elif not customer.has_order():
             order_manager.create_order(products_list_order)

@@ -156,7 +156,6 @@ class OrderManager:
         for category in order_categories: 
             order_categorie_affinity = list(chain.from_iterable(category.affinities_as_category1.all() for category in order_categories))
 
-
         for category_afinity in order_categorie_affinity:
             if not category_afinity.category2 in order_categories:
                 featured_products           = list((category_afinity.category2.featured_products.all()))
@@ -173,7 +172,6 @@ class OrderManager:
         try:
             if not self.recomendations:
                 raise ValueError("No existing recomendations found in send_recomendations.")
-
             for recomendation in self.recomendations:
                 caption = recomendation['text_recomendation'] + '\n\n'
                 caption += recomendation['whats_app_products_links'] if recomendation['whats_app_products_links'] else ""
