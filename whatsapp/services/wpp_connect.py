@@ -46,16 +46,15 @@ class WppConnectService(WhatsAppAPIService):
     def send_image_base64(self, phone: str, is_group: bool = False, filename="", caption="", base64: str = None):
         if not phone or not base64:
             raise ValueError("Phone or base64 string cannot be empty")
-
+        base_64_str_begin = 'data:image/png;base64,'
         data = {
             'phone': str(phone),
             'isGroup': is_group,
             'filename': str(filename),
             'caption': str(caption),
-            'base64': str(base64)
+            'base64': base_64_str_begin + str(base64)
         }
         url = self.session.url + '/send-image'
-
         try:
             response = requests.post(
                 url,
@@ -64,7 +63,7 @@ class WppConnectService(WhatsAppAPIService):
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            logger.error(f"Request send image base64 failed: {e}")
+            logger.error(f"Request send image base64 failed: {e}, response: {response.json()}")
             return None
 
         response_data = response.json()

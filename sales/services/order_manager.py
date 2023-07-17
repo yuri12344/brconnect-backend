@@ -2,15 +2,14 @@ from django.core.exceptions import ObjectDoesNotExist
 from products.models import WhatsAppProductInfo, Product
 from core.services.services import ALERTS
 from .types import ProductType
-from django.utils import timezone
-from sales.models import Order, ProductOrderItem
-from typing import List
 from .handlers import HandleWhatsAppOrderApi
+from sales.models import Order, ProductOrderItem
+from django.utils import timezone
+from itertools import chain
+from typing import List
 import base64
-from django.core.files.base import ContentFile
 import time
 import ipdb
-from itertools import chain
 
 class OrderManager:
     def __init__(self, request, customer, handler: HandleWhatsAppOrderApi = None):
@@ -21,20 +20,25 @@ class OrderManager:
         self.handler        = handler
         self.messages       = []
 
+
     def send_messages(self,  delay_s: int = 3) -> None:
         for message in self.messages:
             self.handler.whatsapp_client.send_message(message=message, phone=self.customer.whatsapp)
             time.sleep(delay_s)
         self.messages = []
 
+
     def send_image_base64(self, base64: str, delay_s: int = 3) -> None:
         self.handler.whatsapp_client.send_base64(base64=base64, phone=self.customer.whatsapp)
-                                                 
+
+
     def create_customer_message(self, message) -> None:
         self.messages.append(message)
 
+
     def get_orders_client(self) -> List[Order]:
         return self.customer.orders.filter(paid=False, expires_at__gt=timezone.now())
+
 
     def create_order(self, products: List[ProductType]) -> None:
         if not products:
@@ -58,6 +62,7 @@ class OrderManager:
                         product_objects.append(Product.objects.get(name=product.name))
                     except Product.DoesNotExist:
                         raise ValueError(f"Product not found with name: {product.name}")
+
 
         order = Order(
             total=0,
@@ -86,7 +91,8 @@ class OrderManager:
         order.total = Order.calculate_total(order.product_order_items.all())
         order.save()
         self.order = order
-    
+
+
     def update_order(self, products: List[ProductType]) -> None:
         if not products:
             raise ValueError("No products provided in update order.")
@@ -141,48 +147,50 @@ class OrderManager:
         self.order.total = Order.calculate_total(self.order.product_order_items.all())
         self.order.save()
 
+
     def get_recomendations(self):
         if not self.order:
             raise ValueError("No existing order found in get_recomendations.")
-        
+
         order_categories = list(chain.from_iterable(item.product_whats.product.categories.all() for item in self.order.product_order_items.all()))
         order_categorie_affinity = []
+        
         for category in order_categories: 
             order_categorie_affinity = list(chain.from_iterable(category.affinities_as_category1.all() for category in order_categories))
-        
+
 
         for category_afinity in order_categorie_affinity:
             if not category_afinity.category2 in order_categories:
                 featured_products           = list((category_afinity.category2.featured_products.all()))
                 whats_app_products_links    = [product.whatsapp_info.link for product in featured_products if product.whatsapp_info]
-                
-                image_path = category_afinity.image.path
-                with open(image_path, 'rb') as image_file:
-                    base64_image = base64.b64encode(image_file.read()).decode()
+ 
+                recomendation_data = {
+                    'text_recomendation': category_afinity.text_recomendation,
+                    'image_path': category_afinity.image.path,
+                    'whats_app_products_links': whats_app_products_links
+                }
+                self.recomendations.append(recomendation_data)
 
-                    recomendation_data = {
-                        'image_base64': base64_image,
-                        'whats_app_products_links': whats_app_products_links
-                    }
-                    self.recomendations.append(recomendation_data)
-                
 
     def send_recomendations(self):
         if not self.recomendations:
             raise ValueError("No existing recomendations found in send_recomendations.")
+        
         msg = "Ola obrigado por comprar, segue as recomendações: \n\n"
         for recomendation in self.recomendations:
             for link in recomendation['whats_app_products_links']:
                 if link:
                     msg += link
-        phone = self.customer.whatsapp 
-        filename ="ok"
-        caption = msg
-        base64 = recomendation['image_base64']
 
-        self.handler.whatsapp_client.send_image_base64(
-            phone=phone,
-            filename=filename,
-            caption=caption,
-            base64=base64
-        )
+        caption = msg
+        image_path = recomendation['image_path']
+        
+        with open(image_path, 'rb') as image_file:
+            base64_image = base64.b64encode(image_file.read()).decode()
+            self.handler.whatsapp_client.send_image_base64(
+                phone=self.customer.whatsapp,
+                filename="ok",
+                caption=caption,
+                base64=base64_image
+            )
+

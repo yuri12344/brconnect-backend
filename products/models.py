@@ -30,10 +30,11 @@ class CategoryAffinity(models.Model):
     """
     A CategoryAffinity represents an affinity relationship between two categories.
     """
-    category1   = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='affinities_as_category1')
-    category2   = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='affinities_as_category2')
-    image       = models.ImageField(upload_to='affinity_images/', null=True, blank=True)
-    company     = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='category_affinities', verbose_name="Empresa")
+    category1           = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='affinities_as_category1')
+    category2           = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='affinities_as_category2')
+    image               = models.ImageField(upload_to='affinity_images/', null=True, blank=True)
+    company             = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='category_affinities', verbose_name="Empresa")
+    text_recomendation  = models.TextField(null=True, blank=True, verbose_name="Texto de Recomendação")
 
     class Meta:
         unique_together = ('category1', 'category2')  # Each pair of categories should have at most one affinity
