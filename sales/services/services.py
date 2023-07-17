@@ -49,6 +49,7 @@ class HandleOrderFactory:
             order_manager.create_order(products_list_order)
 
         order_manager.get_recomendations()
+        time.sleep(15)
         order_manager.send_recomendations()
         
 

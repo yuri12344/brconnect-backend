@@ -167,30 +167,28 @@ class OrderManager:
                 recomendation_data = {
                     'text_recomendation': category_afinity.text_recomendation,
                     'image_path': category_afinity.image.path,
-                    'whats_app_products_links': whats_app_products_links
+                    'whats_app_products_links': whats_app_products_links[0]
                 }
                 self.recomendations.append(recomendation_data)
 
 
     def send_recomendations(self):
-        if not self.recomendations:
-            raise ValueError("No existing recomendations found in send_recomendations.")
-        
-        msg = "Ola obrigado por comprar, segue as recomendações: \n\n"
-        for recomendation in self.recomendations:
-            for link in recomendation['whats_app_products_links']:
-                if link:
-                    msg += link
+        try:
+            if not self.recomendations:
+                raise ValueError("No existing recomendations found in send_recomendations.")
 
-        caption = msg
-        image_path = recomendation['image_path']
-        
-        with open(image_path, 'rb') as image_file:
-            base64_image = base64.b64encode(image_file.read()).decode()
-            self.handler.whatsapp_client.send_image_base64(
-                phone=self.customer.whatsapp,
-                filename="ok",
-                caption=caption,
-                base64=base64_image
-            )
-
+            for recomendation in self.recomendations:
+                caption = recomendation['text_recomendation'] + '\n\n'
+                caption += recomendation['whats_app_products_links']
+                image_path = recomendation['image_path']
+                with open(image_path, 'rb') as image_file:
+                    base64_image = base64.b64encode(image_file.read()).decode()
+                    self.handler.whatsapp_client.send_image_base64(
+                        phone=self.customer.whatsapp,
+                        filename="ok",
+                        caption=caption,
+                        base64=base64_image
+                    )
+        except Exception as e:
+            print(f"Problema no send_recomendations: {e}")
+            raise e
