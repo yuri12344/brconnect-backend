@@ -43,7 +43,6 @@ class OrderManager:
     def create_order(self, products: List[ProductType]) -> None:
         if not products:
             raise ValueError("No products provided in create order.")
-
         # Map product IDs to quantities
         quantities = {product.id: product.quantity for product in products}
 
@@ -72,7 +71,6 @@ class OrderManager:
             expires_at=timezone.now() + timezone.timedelta(minutes=30),
         )
         order.save()
-
         for product in product_objects:
             if isinstance(product, WhatsAppProductInfo):
                 ProductOrderItem.objects.create(
@@ -170,7 +168,6 @@ class OrderManager:
                     'whats_app_products_links': whats_app_products_links[0]
                 }
                 self.recomendations.append(recomendation_data)
-
 
     def send_recomendations(self):
         try:

@@ -41,10 +41,9 @@ class HandleOrderFactory:
 
         products_list_order: List[ProductType] = self.handler.get_order_by_message_id(message_id=self.request.data['message_id'])
         order_manager = OrderManager(self.request, customer, self.handler)
-
         if customer.has_order():
             order_manager.update_order(products_list_order)
-            return {'status': 'order updated'}
+            # return {'status': 'order updated'}
 
         elif not customer.has_order():
             order_manager.create_order(products_list_order)
