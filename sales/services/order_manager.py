@@ -129,9 +129,9 @@ class OrderManager:
         self.categories = self.order.categories()
         return self.categories
     
-    def get_recomendations(self):
+    def get_recomemndations(self):
         if not self.order:
-            raise ValueError("No existing order found in get_recomendations.")
+            raise ValueError("No existing order found in get_recomemndations.")
 
         all_recommendations = []
         for category in self.categories:
@@ -146,15 +146,15 @@ class OrderManager:
                 recommendation_categories.add(recommendation.category_b.id)  # Add category to the set
 
                 
-        return self.recomendations
+        return self.recomemndations
     
 
-    def send_recomendations(self):
+    def send_recomemndations(self):
         try:
-            if not self.recomendations:
-                raise ValueError("No existing recomendations found in send_recomendations.")
+            if not self.recomemndations:
+                raise ValueError("No existing recomemndations found in send_recomemndations.")
             
-            for recomendation in self.recomendations:
+            for recomendation in self.recomemndations:
                 caption = recomendation.recommendation_text
                 image_path = recomendation.recommendation_image.path
                 time.sleep(5)
@@ -167,5 +167,5 @@ class OrderManager:
                         base64=base64_image
                     )
         except Exception as e:
-            print(f"Problema no send_recomendations: {e}")
+            print(f"Problema no send_recomemndations: {e}")
             raise e

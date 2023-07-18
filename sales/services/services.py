@@ -47,8 +47,8 @@ class HandleOrderFactory:
         else:
             order_manager.create_order(products_list_order)
             order_manager.get_categories()
-            order_manager.get_recomendations()
-            if order_manager.recomendations:
-                order_manager.send_recomendations()
+            order_manager.get_recommendations()
+            if order_manager.recommendations:
+                order_manager.send_recommendations()
         
 
