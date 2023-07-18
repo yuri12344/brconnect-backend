@@ -17,7 +17,7 @@ class OrderManager:
         self.request            = request
         self.customer           = customer # I decided to include the customer here because I think will need more calls
         self.order              = None
-        self.recomendations     = []
+        self.recommendations    = []
         self.handler            = handler
         self.messages           = []
         self.categories         = []
