@@ -153,7 +153,6 @@ class OrderManager:
             for recomendation in self.recomendations:
                 caption = recomendation.recommendation_text
                 image_path = recomendation.recommendation_image.path
-                ipdb.set_trace()
                 time.sleep(5)
                 with open(image_path, 'rb') as image_file:
                     base64_image = base64.b64encode(image_file.read()).decode()
