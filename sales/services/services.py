@@ -1,6 +1,5 @@
 from . import HandlerWPPConnectOrder, OrderManager
 from .customer_managment import CustomerManager
-from core.services.services import ALERTS
 from .types import ProductType
 from typing import List
 import ipdb
@@ -35,7 +34,9 @@ class HandleOrderFactory:
         customer = customer_manager.get_or_create_client()
 
         if not customer:
-            raise ValueError(f"Customer not found and could not be created for this order, with name: {self.request.data['client_name']} and whatsapp: {self.request.data['client_phone']}")
+            info = f"Customer not found and could not be created for this order \
+                     with name: {self.request.data['client_name']} and whatsapp: {self.request.data['client_phone']}"
+            raise ValueError(info)
 
         products_list_order: List[ProductType] = self.handler.get_order_by_message_id(message_id=self.request.data['message_id'])
         order_manager = OrderManager(self.request, customer, self.handler)
