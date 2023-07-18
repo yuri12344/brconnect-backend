@@ -129,7 +129,7 @@ class OrderManager:
         self.categories = self.order.categories()
         return self.categories
     
-    def get_recomemndations(self):
+    def get_recommendations(self):
         if not self.order:
             raise ValueError("No existing order found in get_recomemndations.")
 
@@ -149,7 +149,7 @@ class OrderManager:
         return self.recomemndations
     
 
-    def send_recomemndations(self):
+    def send_recommendations(self):
         try:
             if not self.recomemndations:
                 raise ValueError("No existing recomemndations found in send_recomemndations.")
