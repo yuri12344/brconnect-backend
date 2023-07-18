@@ -4,67 +4,18 @@ from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db import models
+from core.models import BaseModel
+from core.services.services import STATE_CHOICES, INDUSTRY_CHOICES, EMPLOYEE_COUNT_CHOICES
 
+
+        
 phone_regex = RegexValidator(
     regex=r'^\+?1?\d{9,15}$',
     message="Telefone deve ser inserido no formato correto: '+554187941579'. Até 15 digitos."
 )
 
-STATE_CHOICES = [
-    ('AC', 'Acre'),
-    ('AL', 'Alagoas'),
-    ('AP', 'Amapá'),
-    ('AM', 'Amazonas'),
-    ('BA', 'Bahia'),
-    ('CE', 'Ceará'),
-    ('DF', 'Distrito Federal'),
-    ('ES', 'Espírito Santo'),
-    ('GO', 'Goiás'),
-    ('MA', 'Maranhão'),
-    ('MT', 'Mato Grosso'),
-    ('MS', 'Mato Grosso do Sul'),
-    ('MG', 'Minas Gerais'),
-    ('PA', 'Pará'),
-    ('PB', 'Paraíba'),
-    ('PR', 'Paraná'),
-    ('PE', 'Pernambuco'),
-    ('PI', 'Piauí'),
-    ('RJ', 'Rio de Janeiro'),
-    ('RN', 'Rio Grande do Norte'),
-    ('RS', 'Rio Grande do Sul'),
-    ('RO', 'Rondônia'),
-    ('RR', 'Roraima'),
-    ('SC', 'Santa Catarina'),
-    ('SP', 'São Paulo'),
-    ('SE', 'Sergipe'),
-    ('TO', 'Tocantins'),
-]
-
 
 class Company(models.Model):
-    INDUSTRY_CHOICES = [
-        ('beauty', 'Beleza'),
-        ('ecommerce', 'E-commerce'),
-        ('education', 'Educação'),
-        ('finance', 'Finanças'),
-        ('food', 'Alimentação'),
-        ('health', 'Saúde'),
-        ('manufacturing', 'Manufatura'),
-        ('other', 'Outro'),
-        ('retail', 'Varejo'),
-        ('services', 'Serviços'),
-        ('tech', 'Tecnologia'),
-    ]
-    EMPLOYEE_COUNT_CHOICES = [
-        (1, '1-10'),
-        (2, '11-50'),
-        (3, '51-200'),
-        (4, '201-500'),
-        (5, '501-1000'),
-        (6, '1001-5000'),
-        (7, '5001-10,000'),
-        (8, '10,001+'),
-    ]
     name                    = models.CharField(max_length=255, verbose_name="Nome", blank=True, null=True)
     street                  = models.CharField(max_length=255, verbose_name="Rua", blank=True, null=True)
     city                    = models.CharField(max_length=255, verbose_name="Cidade", blank=True, null=True)
@@ -75,7 +26,6 @@ class Company(models.Model):
     website                 = models.URLField(max_length=255, null=True, blank=True, verbose_name="Website")
     description             = models.TextField(verbose_name="Descrição", blank=True, null=True)
     owner                   = models.OneToOneField(User, on_delete=models.CASCADE, related_name='company', verbose_name="Criador")
-    date_created            = models.DateTimeField(auto_now_add=True, verbose_name="Data Criação")
     chave_pix               = models.CharField(max_length=255, verbose_name="Chave Pix", blank=True, null=True)
     date_updated            = models.DateTimeField(auto_now=True, verbose_name="Data Atualização")
     cnpj                    = models.CharField(max_length=255, verbose_name="CNPJ", blank=True, null=True)
@@ -94,10 +44,9 @@ class Company(models.Model):
         return self.name
     
     
-class Region(models.Model):
-    regiao      = models.CharField(max_length=255, verbose_name="Regiao")
-    cost        = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Custo frete')
-    company     = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='regions', verbose_name="Empresa")
+class Region(BaseModel):
+    regiao  = models.CharField(max_length=255, verbose_name="Regiao")
+    cost    = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Custo frete')
  
     class Meta:
         db_table = 'regions'
@@ -108,7 +57,7 @@ class Region(models.Model):
         return self.regiao
 
 
-class Customer(models.Model):
+class Customer(BaseModel):
     GENDER_CHOICES = [
         ('M', 'Masculino'),
         ('F', 'Feminino'),
@@ -127,18 +76,10 @@ class Customer(models.Model):
     region              = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Regiao")
     email               = models.EmailField(max_length=255, null=True, blank=True, verbose_name="Email")    
     birthday            = models.DateField(null=True, blank=True, verbose_name="Birthday")
-    date_created        = models.DateTimeField(auto_now_add=True, verbose_name="Date Created")
-    date_updated        = models.DateTimeField(auto_now=True, verbose_name="Date Updated")
     score               = models.IntegerField(default=0, verbose_name="Score")
     age                 = models.IntegerField(null=True, blank=True, verbose_name="Idade")
     gender              = models.CharField(max_length=1, choices=GENDER_CHOICES, null=True, blank=True, verbose_name="Gênero")
     interaction_history = models.TextField(null=True, blank=True, verbose_name="Histórico de Interações")
-    company             = models.ForeignKey(
-        Company, on_delete=models.CASCADE, 
-        related_name='customers', 
-        related_query_name='customer', 
-        verbose_name="Company"
-    )
     favorite_product    = models.ForeignKey(
         'products.Product', on_delete=models.SET_NULL, null=True, blank=True, related_name='loved_by', verbose_name="Produto Favorito"
     )
@@ -171,13 +112,12 @@ class Customer(models.Model):
         return "\n".join(interaction.description for interaction in self.interactions.all())
 
     
-class CustomerGroup(models.Model):
+class CustomerGroup(BaseModel):
     """
     A CustomerGroup represents a group of customers.
     """
     name        = models.CharField(max_length=50, verbose_name="Nome do Grupo")
     customers   = models.ManyToManyField(Customer, related_name='groups', blank=True, verbose_name="Clientes")
-    company     = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='groups', verbose_name="Empresa")
 
     class Meta:
         db_table = 'customer_groups'
@@ -188,13 +128,12 @@ class CustomerGroup(models.Model):
         return self.name
 
 
-class Interaction(models.Model):
+class Interaction(BaseModel):
     name        = models.CharField(max_length=255, verbose_name="Nome", default="Interação")
     description = models.TextField(verbose_name="Descrição", blank=True, null=True)
     date        = models.DateTimeField(auto_now_add=True, verbose_name="Data da Interação")
     score       = models.IntegerField(verbose_name="Pontuação", default=5)
     customers   = models.ManyToManyField(Customer, related_name='interactions', verbose_name="Clientes", blank=True)
-    company     = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='interactions', verbose_name="Empresa")
 
     class Meta:
         db_table = 'interactions'

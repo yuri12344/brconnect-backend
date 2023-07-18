@@ -1,10 +1,9 @@
-from users.models import Company
+from users.models import BaseModel
 from django.db import models
 from urllib.parse import urljoin
 from django.conf import settings
 
-
-class WhatsAppSession(models.Model):
+class WhatsAppSession(BaseModel):
     WHATS_API_PROVIDER = (
         ('wppconnect', 'WppConnect'),
         ('baileys', 'Baileys'),
@@ -13,7 +12,6 @@ class WhatsAppSession(models.Model):
     A WhatsAppSession represents a WhatsApp Web session for a company.
     """
     name = models.CharField(max_length=255, verbose_name="Nome")
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='whatsapp_sessions')
     phone_number = models.CharField(max_length=20, verbose_name="Número de Telefone")
     whatsapp_api_service = models.CharField(max_length=20, choices=WHATS_API_PROVIDER, default='wppconnect')
 
@@ -23,7 +21,7 @@ class WhatsAppSession(models.Model):
     def __str__(self):
         return f'Sessão do WhatsApp para {self.company.name} ({self.phone_number})'
 
-class WppConnectSession(WhatsAppSession):
+class WppConnectSession(BaseModel):
     """
     A WppConnectSession represents a WppConnect WhatsApp Web session for a company.
     """
@@ -44,9 +42,8 @@ class WppConnectSession(WhatsAppSession):
         verbose_name_plural = "Sessões do WppConnect"
 
 
-class TextMessage(models.Model):
+class TextMessage(BaseModel):
     message = models.TextField(verbose_name="Mensagem")
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='text_messages')
 
     class Meta:
         verbose_name = "Texto"
@@ -55,11 +52,11 @@ class TextMessage(models.Model):
         return self.message
 
 
-class ImageMessage(models.Model):
+class ImageMessage(BaseModel):
     name    = models.CharField(max_length=200, verbose_name="Nome")
     image   = models.ImageField(upload_to='images/', verbose_name="Imagem")
     caption = models.CharField(max_length=200, verbose_name="Legenda")
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='image_messages')
+
 
     class Meta:
         verbose_name = "Imagem"
@@ -68,7 +65,7 @@ class ImageMessage(models.Model):
         return self.image.url
     
 
-class Campaign(models.Model):
+class Campaign(BaseModel):
     STATUS_CHOICE = (
         (0, 'Não enviado'),
         (1, 'Enviando'),
@@ -91,4 +88,3 @@ class Campaign(models.Model):
     schedule_type = models.CharField(max_length=10, choices=SCHEDULE_TYPE_CHOICES, default='now')
     schedule_time = models.TimeField(null=True, blank=True)
     schedule_day = models.IntegerField(null=True, blank=True)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='campaigns')

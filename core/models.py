@@ -1,3 +1,11 @@
+from simple_history.models import HistoricalRecords
 from django.db import models
 
-# Create your models here.
+class BaseModel(models.Model):
+    company = models.ForeignKey('users.Company', on_delete=models.CASCADE, verbose_name="Empresa")
+    history = HistoricalRecords(inherit=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
+        

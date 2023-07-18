@@ -1,18 +1,10 @@
+# admin.py
+from .models import WppConnectSession
+from core.auxiliar import AdminBase
 from django.contrib import admin
-from .models import TextMessage, ImageMessage, WppConnectSession, Campaign
 
-@admin.register(TextMessage)
-class TextMessageAdmin(admin.ModelAdmin):
-    pass
-
-@admin.register(ImageMessage)
-class ImageMessageAdmin(admin.ModelAdmin):
-    pass
 
 @admin.register(WppConnectSession)
-class WppConnectSessionAdmin(admin.ModelAdmin):
-    pass
-
-@admin.register(Campaign)
-class CampaignAdmin(admin.ModelAdmin):
-    pass
+class WppConnectSessionAdmin(AdminBase):
+    list_display = ('id', 'company', 'date_created')  # Adjust this according to your needs
+    search_fields = ('id', 'company__name')  # Adjust this according to your needs

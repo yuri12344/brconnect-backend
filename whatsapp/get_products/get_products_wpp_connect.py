@@ -1,4 +1,4 @@
-from products.models import Product, WhatsAppProductInfo
+from products.models import Product
 from django.contrib.auth.models import User
 from users.models import Company
 import requests
@@ -77,14 +77,14 @@ def create_products():
     for product in products:
         product_id = product['id']
         price = int(product['price']) / 1000
-        product_db = Product.objects.get_or_create(name=product['name'], price=price, description=product['description'], company=company)
         
-        WhatsAppProductInfo.objects.get_or_create(
-            id=product_id,
+        Product.objects.get_or_create(
             name=product['name'], 
+            price=price, 
             description=product['description'], 
-            product=product_db[0], 
-            company=company, 
+            retailer_id = product['retailer_id'],
+            whatsapp_meta_id = product_id,
+            company=company
         )
 
 

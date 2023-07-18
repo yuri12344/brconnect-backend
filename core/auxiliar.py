@@ -1,37 +1,29 @@
-import qrcode
-import json
-from io import BytesIO
-from django.core.files import File
-from django.db import models
 from django.contrib import admin
 
-def generate_qr_code(data) -> File:
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr_data = json.dumps(data)
-    qr.add_data(qr_data)
-    qr.make(fit=True)
-    img = qr.make_image(fill='black', back_color='white')
-    temp_handle = BytesIO()
-    img.save(temp_handle, format='png')
-    temp_handle.seek(0)
-    return File(temp_handle) # Retorne a imagem do QR Code como um arquivo
+class CompanyAdminMixin:
+    exclude = ('company',)
 
-class QRCodeMixin(models.Model):
-    qr_code = models.ImageField(upload_to='qr_codes/', blank=True)
-    class Meta:
-        abstract = True
-    def get_qr_data(self):
-        raise NotImplementedError("Subclasses must implement this method.")
-    def save(self, *args, **kwargs):
-        if self.pk is None:  # Se o objeto ainda não existe (ou seja, é uma nova criação)
-            super().save(*args, **kwargs)  # Primeiro, salve o objeto para obter um ID
-        qr_data = self.get_qr_data()
-        qr_code_file = generate_qr_code(qr_data)# Gere a imagem do QR Code
-        self.qr_code.save(f'qr_code_{self.pk}.png', qr_code_file, save=False) # Salve a imagem do QR Code no campo qr_code
-        super().save(*args, **kwargs)
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(company=request.user.company)
 
+    def save_model(self, request, obj, form, change):
+        if not obj.company_id:
+            obj.company = request.user.company
+        super().save_model(request, obj, form, change)
+        
+class AdminBase(admin.ModelAdmin):
+    exclude = ('company',)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(company=request.user.company)
+
+    def save_model(self, request, obj, form, change):
+        if not obj.company_id:
+            obj.company = request.user.company
+        super().save_model(request, obj, form, change)

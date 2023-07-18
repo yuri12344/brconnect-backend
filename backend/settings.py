@@ -98,7 +98,7 @@ postgresql = {
 
 
 DATABASES = {
-    'default': postgresql
+    'default': sqlite
 }
 
 
