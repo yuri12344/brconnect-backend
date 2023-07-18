@@ -1,5 +1,5 @@
 # admin.py
-from .models import WppConnectSession
+from .models import WppConnectSession, TextMessage, ImageMessage, Campaign, VideoMessage
 from core.auxiliar import AdminBase
 from django.contrib import admin
 
@@ -8,3 +8,4 @@ from django.contrib import admin
 class WppConnectSessionAdmin(AdminBase):
     list_display = ('id', 'company', 'date_created')  # Adjust this according to your needs
     search_fields = ('id', 'company__name')  # Adjust this according to your needs
+

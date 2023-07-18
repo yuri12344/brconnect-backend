@@ -64,6 +64,16 @@ class ImageMessage(BaseModel):
     def __str__(self):
         return self.image.url
     
+class VideoMessage(BaseModel):
+    name    = models.CharField(max_length=200, verbose_name="Nome")
+    video   = models.FileField(upload_to='videos/', verbose_name="Video")
+    caption = models.CharField(max_length=200, verbose_name="Legenda")
+
+    class Meta:
+        verbose_name = "Video"
+        verbose_name_plural = "Videos"
+    def __str__(self):
+        return self.video.url
 
 class Campaign(BaseModel):
     STATUS_CHOICE = (

@@ -102,7 +102,6 @@ class OrderManager:
                 })
             except Product.DoesNotExist:
                 raise ValueError(f"Product not found with name: {product.name}")
-
         existing_items = {item.product.id: item for item in self.order.product_order_items.all()}
 
         with transaction.atomic():
@@ -117,7 +116,8 @@ class OrderManager:
                     ProductOrderItem.objects.create(
                         order=self.order,
                         product=product['product'],
-                        quantity=product['quantity']  # Use the quantity from the ProductType
+                        quantity=product['quantity'],  # Use the quantity from the ProductType
+                        company=self.request.user.company,
                     )
 
             self.order.total = Order.calculate_total(self.order.product_order_items.all())
