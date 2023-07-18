@@ -133,14 +133,18 @@ class OrderManager:
         if not self.order:
             raise ValueError("No existing order found in get_recomendations.")
 
-        all_recomendations = []
+        all_recommendations = []
         for category in self.categories:
-            all_recomendations.extend(category.recommendations_as_category_a.all())
+            all_recommendations.extend(category.recommendations_as_category_a.all())
 
         category_ids = {category.id for category in self.categories}
-        for recomendation in all_recomendations:
-            if recomendation.category_b.id not in category_ids:
-                self.recomendations.append(recomendation)
+        recommendation_categories = set()  # Keep track of categories in recommendations
+
+        for recommendation in all_recommendations:
+            if recommendation.category_b.id not in category_ids and recommendation.category_b.id not in recommendation_categories:
+                self.recommendations.append(recommendation)
+                recommendation_categories.add(recommendation.category_b.id)  # Add category to the set
+
                 
         return self.recomendations
     

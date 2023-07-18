@@ -46,7 +46,6 @@ class HandleOrderFactory:
             return {'status': 'order updated'}
         else:
             order_manager.create_order(products_list_order)
-
             order_manager.get_categories()
             order_manager.get_recomendations()
             if order_manager.recomendations:
