@@ -43,14 +43,13 @@ class HandleOrderFactory:
         
         if customer.has_order():
             order_manager.update_order(products_list_order)
-            # return {'status': 'order updated'}
+            return {'status': 'order updated'}
         else:
             order_manager.create_order(products_list_order)
-        order_manager.get_categories()
-        
-        order_manager.get_recomendations()
-        
-        if order_manager.recomendations:
-            order_manager.send_recomendations()
+
+            order_manager.get_categories()
+            order_manager.get_recomendations()
+            if order_manager.recomendations:
+                order_manager.send_recomendations()
         
 
