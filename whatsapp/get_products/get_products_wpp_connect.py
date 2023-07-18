@@ -71,7 +71,7 @@ def create_products():
     with open(filename) as f:
         products = json.load(f)
     print(products)
-    magnata_user = User.objects.get_or_create(username='magnatadosqueijos')[0]
+    magnata_user = User.objects.get(username='magnatadosqueijos')
     company = magnata_user.company
 
     for product in products:

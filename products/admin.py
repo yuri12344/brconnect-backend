@@ -20,8 +20,9 @@ class CategoryAdmin(AdminBase):
     list_display = ('name', 'company', 'date_created')
     search_fields = ('name', 'company__name')
     list_filter = ('company',)
-
+    filter_horizontal = ('products',)
 
 @admin.register(CategoryRecommendation)
 class CategoryRecommendationAdmin(AdminBase):
     list_display = ('category_a', 'category_b', 'company', 'date_created')
+    

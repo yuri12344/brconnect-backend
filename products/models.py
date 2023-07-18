@@ -23,7 +23,7 @@ class CategoryRecommendation(BaseModel):
         null=False, blank=False, verbose_name="Texto de Recomendação", 
         help_text="Mensagem de recomendação enviada ao cliente, sugerindo um produto da categoria B, caso o carrinho não contenha produtos dessa categoria."
     )
-    recommendation_image    = models.ImageField(upload_to='affinity_images/', null=True, blank=True)
+    recommendation_image    = models.ImageField(upload_to='category_recomendations_images/', null=True, blank=True)
 
     class Meta:
         verbose_name = "Recomendação por categoria"
