@@ -4,6 +4,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.db import models
 from typing import List
+import ipdb
 
 class Order(BaseModel):
     """
@@ -32,6 +33,15 @@ class Order(BaseModel):
         verbose_name = "Pedido"
         verbose_name_plural = "Pedidos"
 
+    def categories(self):
+        categories_set = set()
+        product_order_items = self.product_order_items.prefetch_related('product__categories').all()
+        for product in product_order_items:
+            product_categories = product.product.categories.all()
+            categories_set = categories_set.union(product_categories)
+        return categories_set
+
+    
     def is_paid_and_not_expired(self):
         expiration_date = timezone.now() - timedelta(days=self.company.order_expiration_days)
         return not self.paid and self.date_created > expiration_date
