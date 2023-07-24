@@ -24,6 +24,8 @@ class VideoMessageAdmin(AdminBase):
 @admin.register(Campaign)
 class CampaignAdmin(AdminBase):
     list_display = ('id', 'company', 'date_created')
+    filter_horizontal = ('text_messages',)
+    raw_id_fields = ('text_messages',) 
         
     
     
