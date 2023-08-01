@@ -22,26 +22,20 @@ class OrderManager:
         self.messages           = []
         self.categories         = []
         
-
-
     def send_messages(self,  delay_s: int = 3) -> None:
         for message in self.messages:
             self.handler.whatsapp_client.send_message(message=message, phone=self.customer.whatsapp)
             time.sleep(delay_s)
         self.messages = []
 
-
     def send_image_base64(self, base64: str, delay_s: int = 3) -> None:
         self.handler.whatsapp_client.send_base64(base64=base64, phone=self.customer.whatsapp)
-
 
     def create_customer_message(self, message) -> None:
         self.messages.append(message)
 
-
     def get_orders_client(self) -> List[Order]:
         return self.customer.orders.filter(paid=False, expires_at__gt=timezone.now())
-
 
     def create_order(self, products: List[ProductType]) -> None:
         if not products:
@@ -49,14 +43,21 @@ class OrderManager:
 
         product_objects = []
         for product in products:
-            try:
-                product_instance = Product.objects.prefetch_related('categories').get(whatsapp_meta_id=product.id)
-                product_objects.append({
-                    'product': product_instance,
-                    'quantity': product.quantity
-                })
-            except Product.DoesNotExist:
-                raise ValueError(f"Product not found with name: {product.name}")
+            product_instance, created = Product.objects.prefetch_related('categories').get_or_create(
+                whatsapp_meta_id=product.id,
+                defaults={
+                    'name': product.name,
+                    'price': product.price,
+                    'company': self.request.user.company
+                }
+            )
+            if created:
+                product_instance.save()
+            product_objects.append({
+                'product': product_instance,
+                'quantity': product.quantity
+            })
+
 
         order = Order(
             total=0,
@@ -94,14 +95,22 @@ class OrderManager:
 
         new_products = []
         for product in products:
-            try:
-                product_instance = Product.objects.prefetch_related('categories').get(whatsapp_meta_id=product.id)
-                new_products.append({
-                    'product': product_instance,
-                    'quantity': product.quantity
-                })
-            except Product.DoesNotExist:
-                raise ValueError(f"Product not found with name: {product.name}")
+            product_instance, created = Product.objects.prefetch_related('categories').get_or_create(
+                whatsapp_meta_id=product.id,
+                defaults={
+                    'name': product.name,
+                    'price': product.price,
+                    'company': self.request.user.company
+                }
+            )
+            if created:
+                product_instance.save()
+            new_products.append({
+                'product': product_instance,
+                'quantity': product.quantity
+            })
+
+            
         existing_items = {item.product.id: item for item in self.order.product_order_items.all()}
 
         with transaction.atomic():

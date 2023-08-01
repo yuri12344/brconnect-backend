@@ -21,7 +21,7 @@ def seek_products():
     for id in id_list:
         try:
             # Construir a URL
-            url = f'https://apiwpp.brconnect.click/api/alanmagnatadosqueijos/get-product-by-id?phone=557988656151&id={id}'
+            url = f'https://wppconnect.brconnect.click/api/alanmagnatadosqueijos/get-product-by-id?phone=557988656151&id={id}'
 
             # Definir os cabeçalhos
             headers = {
