@@ -3,13 +3,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import OrderDataSerializer
 from .services import HandleOrderFactory
-import ipdb
+import logging
+logger = logging.getLogger('sales')
 
 class HandleOrder(APIView):
     """
     This class is to Handle the order from whatsapp, 
-    who comes from one call via API and given token from company
-    
+    who comes from API call and given company token     
     params:
         message_id: str
         client_name: str
@@ -23,13 +23,10 @@ class HandleOrder(APIView):
 
     # This endpoint is /api/v1/sales/handle_order
     def post(self, request):
-
         # Get serializer and validate data
         serializer = OrderDataSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
-        if not request.user.company:
-            return Response({"message": "User has no company"}, status=400)
 
         # Get handler and handle order
         try:
@@ -37,4 +34,5 @@ class HandleOrder(APIView):
             handler.handle_order()
             return Response({"message": "data"})
         except Exception as e:
+            logger.error(f"Error handling order: {str(e)}")
             return Response({"message": str(e)}, status=400)
