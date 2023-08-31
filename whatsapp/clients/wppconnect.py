@@ -1,24 +1,23 @@
+from .whatsapp_interface import WhatsAppClientInterface
 from ..models import WppConnectSession
 from users.models import Company
-from . import WhatsAppAPIService
 import logging
 import requests
-
 import ipdb
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
 logger = logging.getLogger(__name__)
 
-
-
-class WppConnectService(WhatsAppAPIService):
-    whatsapp_api_service = 'wppconnect'
-    def __init__(self, company: Company, whatsapp_api_session = None):
+class WppConnectWhatsAppClient(WhatsAppClientInterface):
+    def __init__(
+            self, 
+            company: Company, 
+            whatsapp_session = None
+        ):
         self.company = company
         self.session = WppConnectSession.objects.get(
             company=company,
-            whatsapp_api_session=whatsapp_api_session
+            whatsapp_api_session=whatsapp_session
         )
 
     # [{'id': '4317646281673903', 'price': 56000, 'name': 'Provolone maturado por 2 meses', 'quantity': 1}]    

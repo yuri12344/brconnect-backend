@@ -3,7 +3,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import OrderDataSerializer
 from .services import HandleOrderFactory
-import logging
+
+from whatsapp.clients.whatsapp_client_service import WhatsAppClientService
+
+import logging, ipdb
 logger = logging.getLogger('sales')
 
 class HandleOrder(APIView):
@@ -27,9 +30,10 @@ class HandleOrder(APIView):
         serializer = OrderDataSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
-
         # Get handler and handle order
         try:
+            ipdb.set_trace()
+            whatsapp_client = WhatsAppClientService(request).get_client()
             handler = HandleOrderFactory(request)
             handler.handle_order()
             return Response({"message": "data"})

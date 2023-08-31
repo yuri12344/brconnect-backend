@@ -1,6 +1,6 @@
-from . import WhatsAppAPIService
+from .whatsapp_interface import WhatsAppClientInterface
 
-class BaileysService(WhatsAppAPIService):
+class CodeChatWhatsAppClient(WhatsAppClientInterface):
     def fetch_products(self):
         ...
     

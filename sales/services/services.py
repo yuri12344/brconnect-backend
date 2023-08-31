@@ -23,7 +23,6 @@ class HandleOrderFactory:
             raise ValueError("Invalid provider")
         return handler_class(company=self.request.user.company, whatsapp_api_session=self.whatsapp_api_session)
     
-
     def handle_order(self):
         customer_info = {
             'name': self.request.data['client_name'],
@@ -53,4 +52,3 @@ class HandleOrderFactory:
             if order_manager.recommendations:
                 order_manager.send_recommendations()
         
-

@@ -1,4 +1,4 @@
-from whatsapp.services.wpp_connect import WppConnectService
+from whatsapp.clients.wppconnect import WppConnectWhatsAppClient
 from abc import ABC, abstractmethod
 from .types import ProductType
 from typing import List
@@ -20,7 +20,7 @@ class HandlerWPPConnectOrder(HandleWhatsAppOrderApi):
     name = 'WppConnect'
     def __init__(self, company, whatsapp_api_session):
         self.session_name = whatsapp_api_session
-        self.whatsapp_client = self.get_whatsapp_client(company, WppConnectService, whatsapp_api_session)
+        self.whatsapp_client = self.get_whatsapp_client(company, WppConnectWhatsAppClient, whatsapp_api_session)
     
     def get_order_by_message_id(self, message_id) -> List[ProductType]:
         result = []

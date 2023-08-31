@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, Mock
 from .models import Company, WppConnectSession
-from .services.wpp_connect import WppConnectService
+from .clients.wppconnect import WppConnectService
 import requests
 
 class TestWppConnectService(unittest.TestCase):

@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-class WhatsAppAPIService:
+class WhatsAppClientInterface:
     @abstractmethod
     def fetch_products(self):
         pass
