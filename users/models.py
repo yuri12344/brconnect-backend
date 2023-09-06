@@ -7,13 +7,10 @@ from django.db import models
 from core.models import BaseModel
 from core.services.services import STATE_CHOICES, INDUSTRY_CHOICES, EMPLOYEE_COUNT_CHOICES
 
-
-        
 phone_regex = RegexValidator(
     regex=r'^\+?1?\d{9,15}$',
     message="Telefone deve ser inserido no formato correto: '+554187941579'. Até 15 digitos."
 )
-
 
 class Company(models.Model):
     name                    = models.CharField(max_length=255, verbose_name="Nome", blank=True, null=True)
@@ -43,7 +40,6 @@ class Company(models.Model):
     def __str__(self):
         return self.name
     
-    
 class Region(BaseModel):
     regiao  = models.CharField(max_length=255, verbose_name="Regiao")
     cost    = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Custo frete')
@@ -55,7 +51,6 @@ class Region(BaseModel):
 
     def __str__(self):
         return self.regiao
-
 
 class Customer(BaseModel):
     GENDER_CHOICES = [
@@ -97,8 +92,21 @@ class Customer(BaseModel):
     def __str__(self):
         return self.name
     
-    def has_order(self):
-        return any(order.is_paid_and_not_expired() for order in self.orders.all())
+    def has_order(self) -> bool:
+        """
+        Verifica se o cliente possui alguma ordem que está paga e não expirada.
+
+        Retorna:
+            bool: True se existe pelo menos uma ordem paga e não expirada, caso contrário False.
+        """
+        orders = self.orders.all()
+        for order in orders:
+            if not order.is_paid() and not order.is_expired():
+                return True
+        return False
+    
+
+
 
     def has_address(self):
         return bool(self.street and self.state and self.city and self.zip)
@@ -110,7 +118,6 @@ class Customer(BaseModel):
     @property
     def interaction_history(self):
         return "\n".join(interaction.description for interaction in self.interactions.all())
-
     
 class CustomerGroup(BaseModel):
     """

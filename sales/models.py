@@ -41,10 +41,25 @@ class Order(BaseModel):
             categories_set = categories_set.union(product_categories)
         return categories_set
 
-    
     def is_paid_and_not_expired(self):
-        expiration_date = timezone.now() - timedelta(days=self.company.order_expiration_days)
-        return not self.paid and self.date_created > expiration_date
+        
+        ...
+        
+    def is_paid(self):
+        """
+        Verifica se a ordem está paga e não expirada.
+        
+        Uma ordem é considerada não expirada se a data de criação da ordem é posterior à data de expiração calculada.
+        
+        Retorna:
+            bool: True se a ordem está paga e não expirada, caso contrário False.
+        """
+        return True if self.paid else False
+    
+    def is_expired(self):
+        company_expiration_date_days = self.company.order_expiration_days
+        return True if self.date_created < timezone.now() - timedelta(days=company_expiration_date_days) else False
+        
 
     @staticmethod
     def calculate_total(product_order_items: List['ProductOrderItem']):

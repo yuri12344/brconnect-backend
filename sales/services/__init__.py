@@ -1,5 +1,3 @@
-from .types import ProductType
-from .handlers import HandleWhatsAppOrderApi, HandlerWPPConnectOrder
-from .order_manager import OrderManager
-from .services import HandleOrderFactory
+from .types import WhatsAppProduct
+from .order_workflow import OrderWorkflow
 

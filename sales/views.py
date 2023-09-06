@@ -2,7 +2,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import OrderDataSerializer
-from .services import HandleOrderFactory
+
+from .services.customer_managment import get_or_create_customer
+from users.models import Customer
+from .services.order_workflow import OrderWorkflow
+
 
 from whatsapp.clients.whatsapp_client_service import WhatsAppClientService
 
@@ -32,10 +36,26 @@ class HandleOrder(APIView):
             return Response(serializer.errors, status=400)
         # Get handler and handle order
         try:
-            ipdb.set_trace()
-            whatsapp_client = WhatsAppClientService(request).get_client()
-            handler = HandleOrderFactory(request)
-            handler.handle_order()
+            customer: Customer      = get_or_create_customer(request)
+            whatsapp_client         = WhatsAppClientService(request).get_client()
+            order_flow = OrderWorkflow(
+                company=request.user.company,
+                customer=customer, 
+                whatsapp_client=whatsapp_client,
+                message_id = request.data['message_id']
+            )
+            order_flow._whatsapp_products_list()
+            order_flow._client_has_order_in_back_end()
+            
+            if order_flow.client_has_order_in_back_end:
+                order_flow._get_last_order()
+                order_flow._update_order()
+            else:
+                order_flow._create_order()
+                
+            order_flow._generate_messages()
+            order_flow._send_messages()
+                
             return Response({"message": "data"})
         except Exception as e:
             logger.error(f"Error handling order: {str(e)}")
