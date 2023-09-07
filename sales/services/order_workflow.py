@@ -18,10 +18,27 @@ class OrderWorkflow:
         self.whatsapp_order:WhatsAppOrder                           = None
         self.messages: list[SendMessage | RecommendationMessage]    = []
         self.client_has_order_in_back_end:bool                      = False
+        self.product_objects: list[ProductQuantityOrder]            = []
     
     def _client_has_order_in_back_end(self) -> bool:
         self.client_has_order_in_back_end = self.customer.has_order()
         return self.client_has_order_in_back_end
+    
+    def _create_products_in_back_end(self) -> None:
+        """Create products in backend"""
+        if not self.whatsapp_products:
+            self._whatsapp_products_list()
+        for product in self.whatsapp_products:
+            Product.objects.get_or_create(
+                whatsapp_meta_id=product.id,
+                defaults={
+                    'name': product.name,
+                    'price': product.price,
+                    'company': self.company,
+                    'description': 'INSERIR DESCRIÇÃO'
+                }
+            )
+            
         
     def _get_recommendations(self) -> list[RecommendationMessage]:
         all_recommendations = []
@@ -65,7 +82,7 @@ class OrderWorkflow:
     def _get_last_order(self) -> Order:
         self.order = self.customer.orders.last()
         return self.order
-    
+
     def _update_order(self) -> None:
         if not self.whatsapp_products:
             self._whatsapp_products_list()
@@ -76,11 +93,12 @@ class OrderWorkflow:
         with transaction.atomic():
             for product in self.whatsapp_products:
                 if product.id in existing_items:
-                    # Update the quantity of the existing items
+                    # Update the quantity of the existing item in order
                     item = existing_items[product.id]
                     item.quantity = item.quantity + product.quantity 
                     item.save(update_fields=['quantity']) 
                 else:
+                    ipdb.set_trace()
                     # Create a new ProductOrderItem with new products
                     ProductOrderItem.objects.create(
                         order=self.order,
@@ -91,7 +109,7 @@ class OrderWorkflow:
             self.order.total = Order.calculate_total(self.order.product_order_items.all())
             self.order.save()
             
-    def _create_the_product_order_items(self, product_objects):
+    def _create_product_order_items(self):
         with transaction.atomic():
             product_order_items = [
                 ProductOrderItem(
@@ -100,33 +118,28 @@ class OrderWorkflow:
                     quantity=product_quantity_order.quantity,
                     company=self.company,
                 )
-                for product_quantity_order in product_objects
+                for product_quantity_order in self.product_objects
             ]
             ProductOrderItem.objects.bulk_create(product_order_items)
             self.order.total = Order.calculate_total(self.order.product_order_items.all())
             self.order.save()
         return self.order
         
-    def _get_or_create_products_and_quantities(self) -> list[ProductQuantityOrder]:
+    def _get_products_and_quantities(self) -> list[ProductQuantityOrder]:
         product_objects = []
         for product in self.whatsapp_products:
-            product_instance, created = Product.objects.prefetch_related('categories').get_or_create(
+            product_instance = Product.objects.get(
                 whatsapp_meta_id=product.id,
-                defaults={
-                    'name': product.name,
-                    'price': product.price,
-                    'company': self.company
-                }
             )
-            if created: product_instance.save()
             product_objects.append(ProductQuantityOrder(
                 product=product_instance,
                 quantity=product.quantity
             ))
-        return product_objects
+        self.product_objects = product_objects
+        return self.product_objects
              
     def _create_order(self) -> Order:
-        product_objects = self._get_or_create_products_and_quantities()
+        self._get_products_and_quantities()
         self.order = Order(
             total=0,
             customer=self.customer,
@@ -135,7 +148,7 @@ class OrderWorkflow:
         )
         # Put the product items inside of the order
         self.order.save()
-        self._create_the_product_order_items(product_objects)
+        self._create_product_order_items()
         return self.order
 
     def _generate_messages(self):
@@ -144,12 +157,12 @@ class OrderWorkflow:
         """
         if not self.whatsapp_order:
             self._whatsapp_order()
-        if self.whatsapp_order.total_quantity == 1:
+        if self.whatsapp_order.total_quantity == 1 and self._client_has_order_in_back_end():
             message = SendMessage(phone=self.customer.whatsapp, message="💳BACKENDPara melhorar o *custo benefício* de sua compra, sugerimos que *adicione mais um produto* por conta do *valor do frete.*🧀")
             self.messages.append(message)
         else:
-            recommendations = self._get_recommendations()
-            self.messages.append(recommendations)
+            # ecommendations = self._get_recommendations()
+            self.messages.append("Recomendation")
 
     def _send_messages(self):
         """

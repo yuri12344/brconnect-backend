@@ -45,8 +45,8 @@ class HandleOrder(APIView):
                 message_id = request.data['message_id']
             )
             order_flow._whatsapp_products_list()
+            order_flow._create_products_in_back_end()
             order_flow._client_has_order_in_back_end()
-            
             if order_flow.client_has_order_in_back_end:
                 order_flow._get_last_order()
                 order_flow._update_order()

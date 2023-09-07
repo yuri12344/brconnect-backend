@@ -36,7 +36,7 @@ class Product(BaseModel):
     price               = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Preço", default=0.00)
     description         = models.TextField(null=True, blank=True, verbose_name="Descrição")
     retailer_id         = models.CharField(max_length=255, verbose_name="Código do item", null=True, blank=True)
-    whatsapp_meta_id    = models.CharField(max_length=255, verbose_name="ID produto Meta", null=True, blank=True)
+    whatsapp_meta_id    = models.CharField(max_length=255, verbose_name="ID produto Meta", null=True, blank=True, unique=True)
     whatsapp_link       = models.URLField(verbose_name="Link no Whatsapp", null=True, blank=True)
 
     class Meta:
