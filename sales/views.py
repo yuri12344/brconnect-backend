@@ -9,6 +9,7 @@ from .services.order_workflow import OrderWorkflow
 
 
 from whatsapp.clients.whatsapp_client_service import WhatsAppClientService
+from whatsapp.clients.whatsapp_interface import WhatsAppOrder
 
 import logging, ipdb
 logger = logging.getLogger('sales')
@@ -36,16 +37,17 @@ class HandleOrder(APIView):
             return Response(serializer.errors, status=400)
         # Get handler and handle order
         try:
-            customer: Customer      = get_or_create_customer(request)
-            whatsapp_client         = WhatsAppClientService(request).get_client()
+            customer: Customer              = get_or_create_customer(request)
+            whatsapp_client                 = WhatsAppClientService(request).get_client()
+            whatsapp_order: WhatsAppOrder   = whatsapp_client.get_order_by_message_id(request.data['message_id'])
+            ipdb.set_trace()
+            
             order_flow = OrderWorkflow(
                 company=request.user.company,
                 customer=customer, 
-                whatsapp_client=whatsapp_client,
-                message_id = request.data['message_id']
             )
-            order_flow._whatsapp_products_list()
-            order_flow._create_products_in_back_end()
+            
+            order_flow._create_products_in_back_end(whatsapp_order)
             order_flow._client_has_order_in_back_end()
             if order_flow.client_has_order_in_back_end:
                 order_flow._get_last_order()

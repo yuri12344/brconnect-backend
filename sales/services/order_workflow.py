@@ -9,13 +9,9 @@ from products.models import Product
 import ipdb
 
 class OrderWorkflow:
-    def __init__(self, company, customer, whatsapp_client, message_id):
+    def __init__(self, company, customer):
         self.company                                                = company
         self.customer                                               = customer
-        self.whatsapp_client                                        = whatsapp_client
-        self.message_id                                             = message_id
-        self.whatsapp_products                                      = []
-        self.whatsapp_order:WhatsAppOrder                           = None
         self.messages: list[SendMessage | RecommendationMessage]    = []
         self.client_has_order_in_back_end:bool                      = False
         self.product_objects: list[ProductQuantityOrder]            = []
@@ -24,10 +20,8 @@ class OrderWorkflow:
         self.client_has_order_in_back_end = self.customer.has_order()
         return self.client_has_order_in_back_end
     
-    def _create_products_in_back_end(self) -> None:
+    def _create_products_in_back_end(self, whatsapp_order) -> None:
         """Create products in backend"""
-        if not self.whatsapp_products:
-            self._whatsapp_products_list()
         for product in self.whatsapp_products:
             Product.objects.get_or_create(
                 whatsapp_meta_id=product.id,
@@ -38,7 +32,6 @@ class OrderWorkflow:
                     'description': 'INSERIR DESCRIÇÃO'
                 }
             )
-            
         
     def _get_recommendations(self) -> list[RecommendationMessage]:
         all_recommendations = []
@@ -54,38 +47,12 @@ class OrderWorkflow:
                 recommendation_categories.add(recommendation.category_b.id)  # Add category to the set
         return self.recommendations
 
-    def _whatsapp_order(self):
-        if not self.whatsapp_products:
-            self._whatsapp_products_list()
-        self.whatsapp_order = WhatsAppOrder(
-            total_quantity=sum([product.quantity for product in self.whatsapp_products]),
-            products=self.whatsapp_products
-        )
-        return self.whatsapp_order
- 
-    def _whatsapp_products_list(self) -> list[WhatsAppProduct]:
-        if not self.message_id:
-            raise Exception("Message id is required")
-        
-        whatsapp_raw_product_list = self.whatsapp_client.get_order_by_message_id(message_id=self.message_id)
-        formated_product_list = []
-        for product in whatsapp_raw_product_list:
-            formated_product_list.append(WhatsAppProduct(
-                id=product['id'],
-                name=product['name'],
-                price=product['price'],
-                quantity=product['quantity']
-            ))
-        self.whatsapp_products = formated_product_list
-        return self.whatsapp_products
             
     def _get_last_order(self) -> Order:
         self.order = self.customer.orders.last()
         return self.order
 
-    def _update_order(self) -> None:
-        if not self.whatsapp_products:
-            self._whatsapp_products_list()
+    def _update_order(self, products) -> None:
         existing_items = {item.product.whatsapp_meta_id: item for item in self.order.product_order_items.all()}
         if not existing_items:
             raise Exception("Problem in update, order has no items")

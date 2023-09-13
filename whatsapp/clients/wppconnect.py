@@ -1,12 +1,16 @@
-from .whatsapp_interface import WhatsAppClientInterface
+from .whatsapp_interface import WhatsAppClientInterface, WhatsAppOrder, ProductOrder
 from ..models import WppConnectSession
 from users.models import Company
 import logging
 import requests
 import ipdb
 
+
+
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
 
 class WppConnectWhatsAppClient(WhatsAppClientInterface):
     def __init__(
@@ -19,9 +23,26 @@ class WppConnectWhatsAppClient(WhatsAppClientInterface):
             company=company,
             whatsapp_api_session=whatsapp_session
         )
-
+        
+    def _format_order(self, raw_product_list: list[dict]) -> WhatsAppOrder:
+        if not raw_product_list:
+            raise ValueError("Raw product list cannot be empty")
+        formated_product_list = []
+        for product in raw_product_list:
+            formated_product_list.append(ProductOrder(
+                id=product['id'],
+                name=product['name'],
+                price=product['price'],
+                quantity=product['quantity']
+            ))
+        return WhatsAppOrder(
+            total_quantity=sum([product.quantity for product in formated_product_list]),
+            total_value=sum([product.price * product.quantity for product in formated_product_list]),
+            products=formated_product_list
+        )
+        
     # [{'id': '4317646281673903', 'price': 56000, 'name': 'Provolone maturado por 2 meses', 'quantity': 1}]    
-    def get_order_by_message_id(self, message_id: str):
+    def _get_order_by_message_id(self, message_id: str):
         if not message_id:
             raise ValueError("Message id cannot be empty")
         
@@ -41,6 +62,10 @@ class WppConnectWhatsAppClient(WhatsAppClientInterface):
         response_data = response.json()
         return response_data.get('response', {}).get('data', [])
 
+    def get_order_by_message_id(self, message_id: str) -> WhatsAppOrder:
+        raw_product_list = self._get_order_by_message_id(message_id)
+        return self._format_order(raw_product_list)
+        
         
     def send_image_base64(self, phone: str, is_group: bool = False, filename="", caption="", base64: str = None):
         if not phone or not base64:
