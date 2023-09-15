@@ -5,12 +5,8 @@ import logging
 import requests
 import ipdb
 
-
-
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
 
 class WppConnectWhatsAppClient(WhatsAppClientInterface):
     def __init__(
@@ -37,7 +33,7 @@ class WppConnectWhatsAppClient(WhatsAppClientInterface):
             ))
         return WhatsAppOrder(
             total_quantity=sum([product.quantity for product in formated_product_list]),
-            total_value=sum([product.price * product.quantity for product in formated_product_list]),
+            total_value=sum([(product.price / 1000) * product.quantity for product in formated_product_list]),
             products=formated_product_list
         )
         
@@ -66,7 +62,6 @@ class WppConnectWhatsAppClient(WhatsAppClientInterface):
         raw_product_list = self._get_order_by_message_id(message_id)
         return self._format_order(raw_product_list)
         
-        
     def send_image_base64(self, phone: str, is_group: bool = False, filename="", caption="", base64: str = None):
         if not phone or not base64:
             raise ValueError("Phone or base64 string cannot be empty")
@@ -94,7 +89,6 @@ class WppConnectWhatsAppClient(WhatsAppClientInterface):
         response_data = response.json()
         return response_data
     
-
     def send_message(self, phone, is_group=None, message=""):
         if not phone or not message:
             raise ValueError("Phone or message cannot be empty")

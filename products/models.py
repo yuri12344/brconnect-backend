@@ -1,5 +1,8 @@
+from abc import abstractmethod
 from users.models import BaseModel
 from django.db import models
+
+from whatsapp.clients.whatsapp_interface import WhatsAppOrder
 
 
 class Category(BaseModel):
@@ -43,6 +46,26 @@ class Product(BaseModel):
         db_table = "products"
         verbose_name = "Produto"
         verbose_name_plural = "Produtos"
+
+    @abstractmethod
+    def create_products_in_back_end_from_whatsapp_order(whatsapp_order: WhatsAppOrder) -> list['Product']:
+        """This function should create the products in back-end, from whatsapp order, in case they dont exists
+
+        Args:
+            whatsapp_order (WhatsAppOrder): _description_
+        """
+        products = []
+        for product in whatsapp_order.products:
+            products.append(Product.objects.get_or_create(
+                whatsapp_meta_id=product.id,
+                defaults={
+                    "whatsapp_meta_id": product.id,
+                    "name": product.name,
+                    "price": product.price,
+                    "description": "Criado automaticamente pelo sistema, via whatsapp order",
+                }
+            ))
+        return products
 
     def __str__(self):
         return f"id: {self.pk} | Produto: {self.name}"

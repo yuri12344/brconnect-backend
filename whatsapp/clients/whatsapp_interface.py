@@ -5,7 +5,7 @@ from typing import Optional
 @dataclass
 class ProductOrder:
     id: str
-    price: int
+    price: float
     name: str
     quantity: int
     thumbnailUrl: Optional[str] = field(default=None)
@@ -15,7 +15,7 @@ class ProductOrder:
 class WhatsAppOrder:
     products: list[ProductOrder] 
     total_quantity: int
-    total_value: int  
+    total_value: float  
     
 class WhatsAppClientInterface:
     @abstractmethod

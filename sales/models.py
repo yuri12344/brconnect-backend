@@ -1,10 +1,12 @@
+from abc import abstractmethod
 from users.models import Customer, BaseModel
 from products.models import Product
 from django.utils import timezone
 from datetime import timedelta
 from django.db import models
-from typing import List
 import ipdb
+from whatsapp.clients.whatsapp_interface import WhatsAppOrder
+
 
 class Order(BaseModel):
     """
@@ -40,33 +42,63 @@ class Order(BaseModel):
             product_categories = product.product.categories.all()
             categories_set = categories_set.union(product_categories)
         return categories_set
+    
+    def get_recommendations(self):
+        categories = list(self.categories())
+        ipdb.set_trace()
+        if categories:
+            ...
+        else:
+            return None
 
-    def is_paid_and_not_expired(self):
+    def calculate_total(self):
+        total = 0
+        for product in self.product_order_items.all():
+            total += product.product.price * product.quantity
+        return total
         
-        ...
+    def update_order_from_whatsapp_order(self, whatsapp_order: WhatsAppOrder):
+        # add quantity for same products, and create new products
+        for product in whatsapp_order.products:
+            product_instance_in_whatsapp_cart = Product.objects.get(whatsapp_meta_id=product.id)
+            product_order_item = self.product_order_items.filter(product=product_instance_in_whatsapp_cart).first()
+            if product_order_item:
+                product_order_item.quantity += product.quantity
+                product_order_item.save()
+            else:
+                ProductOrderItem.objects.create(
+                    company=self.company,
+                    order=self,
+                    product=product_instance_in_whatsapp_cart,
+                    quantity=product.quantity,
+                )
+        self.total = self.calculate_total()
+        self.save()
+        return self
+        
+    @abstractmethod
+    def create_order_from_whatsapp_order(whatsapp_order: WhatsAppOrder, customer, company):
+        order = Order.objects.create(
+            company=company,
+            customer=customer,
+            total=whatsapp_order.total_value,
+            payment_method="D",
+        )
+        for product in whatsapp_order.products:
+            ProductOrderItem.objects.create(
+                company=company,
+                order=order,
+                product=Product.objects.get(whatsapp_meta_id=product.id),
+                quantity=product.quantity,
+            )
+        return order
         
     def is_paid(self):
-        """
-        Verifica se a ordem está paga e não expirada.
-        
-        Uma ordem é considerada não expirada se a data de criação da ordem é posterior à data de expiração calculada.
-        
-        Retorna:
-            bool: True se a ordem está paga e não expirada, caso contrário False.
-        """
         return True if self.paid else False
     
     def is_expired(self):
         company_expiration_date_days = self.company.order_expiration_days
         return True if self.date_created < timezone.now() - timedelta(days=company_expiration_date_days) else False
-        
-
-    @staticmethod
-    def calculate_total(product_order_items: List['ProductOrderItem']):
-        total = 0
-        for item in product_order_items:
-            total += item.product.price * item.quantity
-        return total
 
     def __str__(self):
         return f'Pedido para {self.customer.name}'

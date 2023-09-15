@@ -67,7 +67,7 @@ class Customer(BaseModel):
     neighborhood        = models.CharField(max_length=255, null=True, blank=True, verbose_name="Bairro")
     zip                 = models.CharField(max_length=255, null=True, blank=True, verbose_name="CEP")
     city                = models.CharField(max_length=255, null=True, blank=True, verbose_name="Cidade")
-    state                   = models.CharField(max_length=2, choices=STATE_CHOICES, null=True, blank=True, verbose_name="Estado")
+    state               = models.CharField(max_length=2, choices=STATE_CHOICES, null=True, blank=True, verbose_name="Estado")
     region              = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Regiao")
     email               = models.EmailField(max_length=255, null=True, blank=True, verbose_name="Email")    
     birthday            = models.DateField(null=True, blank=True, verbose_name="Birthday")
@@ -104,9 +104,6 @@ class Customer(BaseModel):
             if not order.is_paid() and not order.is_expired():
                 return True
         return False
-    
-
-
 
     def has_address(self):
         return bool(self.street and self.state and self.city and self.zip)
