@@ -44,10 +44,27 @@ class Order(BaseModel):
         return categories_set
     
     def get_recommendations(self):
+        """
+        The main problem I'm trying to solve here, is, if they have recommendations, we should give then the text message and 
+        the base64 file, btw, we should not do that, if the 2° categorie, is already in the order. Because its like
+        we are recommending wine, for who already bought wine
+        """
         categories = list(self.categories())
-        ipdb.set_trace()
+        
+        recommendations = []
+        all_recommendations = []
         if categories:
-            ...
+            for category in categories:
+                all_recommendations.extend(category.recommendations_as_category_a.all())
+            
+            category_ids = {category.id for category in categories}
+            recommendation_categories = set()  # Keep track of categories in recommendations
+
+            for recommendation in all_recommendations:
+                if recommendation.category_b.id not in category_ids and recommendation.category_b.id not in recommendation_categories:
+                    recommendations.append(recommendation)
+                    recommendation_categories.add(recommendation.category_b.id)  # Add category to the set
+            return recommendations
         else:
             return None
 

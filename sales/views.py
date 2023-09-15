@@ -14,7 +14,7 @@ from products.models import Product
 from whatsapp.clients.whatsapp_client_service import WhatsAppClientService
 from whatsapp.clients.whatsapp_interface import WhatsAppOrder
 
-import logging, ipdb
+import logging, ipdb, base64, time
 logger = logging.getLogger('sales')
 
 class OrderManager:
@@ -75,11 +75,19 @@ class OrderManager:
     def _use_case_two_send_recommendations(self):
         recommendations = self.order.get_recommendations()
         if recommendations:
-            self.messages.append(RecommendationMessage(
-                phone=self.customer.whatsapp, 
-                caption="Recomendação de produtos", 
-                base64="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABcAAAAXCAYAAADgKtSgAAAABHNCSVQICAgIfAhkiAAAABl0RVh0U29mdHdhcmUAZ25vbWUtc2NyZWVuc2hvdO8Dvz4AAAAmdEVYdENyZWF0aW9uIFRpbWUAcXVhIDEzIHNldCAyMDIzIDEzOjUwOjE5hpYoPAAAACZJREFUSIlj/P///38GGgEmWhk8avio4aOGjxo+avio4aOGD1LDAQskBCpJXmLHAAAAAElFTkSuQmCC"
-            ))
+            for recommendation in recommendations:
+                caption = recomendation.recommendation_text
+                image_path = recomendation.recommendation_image.path
+                time.sleep(5)
+                
+                with open(image_path, 'rb') as image_file:
+                    base64_image = base64.b64encode(image_file.read()).decode()
+                    self.whatsapp_client.send_image_base64(
+                        phone=self.customer.whatsapp,
+                        filename="ok",
+                        caption=caption,
+                        base64=base64_image
+                    )
         else:
             return None
     

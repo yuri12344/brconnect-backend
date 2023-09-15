@@ -14,7 +14,6 @@ class ProductAdmin(AdminBase):
     list_filter = ('company',)
     inlines = [ProductImageInline]
     
-
 @admin.register(Category)
 class CategoryAdmin(AdminBase):
     list_display = ('name', 'company', 'date_created')
@@ -24,5 +23,5 @@ class CategoryAdmin(AdminBase):
 
 @admin.register(CategoryRecommendation)
 class CategoryRecommendationAdmin(AdminBase):
-    list_display = ('category_a', 'category_b', 'company', 'date_created')
+    list_display = ('category_a', 'category_b', 'recommendation_text', 'company', 'date_created')
     
