@@ -74,10 +74,11 @@ class OrderManager:
 
     def _use_case_two_send_recommendations(self):
         recommendations = self.order.get_recommendations()
+        ipdb.set_trace()
         if recommendations:
             for recommendation in recommendations:
-                caption = recomendation.recommendation_text
-                image_path = recomendation.recommendation_image.path
+                caption = recommendation.recommendation_text
+                image_path = recommendation.recommendation_image.path
                 time.sleep(5)
                 
                 with open(image_path, 'rb') as image_file:
