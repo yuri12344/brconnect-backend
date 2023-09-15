@@ -74,7 +74,6 @@ class OrderManager:
 
     def _use_case_two_send_recommendations(self):
         recommendations = self.order.get_recommendations()
-        ipdb.set_trace()
         if recommendations:
             for recommendation in recommendations:
                 caption = recommendation.recommendation_text
