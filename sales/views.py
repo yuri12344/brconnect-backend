@@ -37,6 +37,8 @@ class OrderManager:
                         message=message.message
                     )
                 case "RecommendationMessage":
+                    
+                    base64_image = base64.b64encode(image_file.read()).decode()
                     self.whatsapp_client.send_image_base64(
                         phone=message.phone, 
                         caption=message.caption, 
@@ -59,15 +61,16 @@ class OrderManager:
         quantity = self.whatsapp_order.total_quantity
         """ If client has no order and the whatsapp_order has only one product, send message to client """
         if not customer_has_order and quantity == 1:
-            self.use_case = self._use_case_one_add_more_products_to_the_cart
+            self.use_case.append(self._use_case_one_add_more_products_to_the_cart)
             
         """ If whatsapp_order > 1 quantity and dont have order in back-end, send recommendations """
         if not customer_has_order and quantity > 1:
-            self.use_case = self._use_case_two_send_recommendations
+            self.use_case.append(self._use_case_two_send_recommendations)
 
     def execute_use_case(self):
         if self.use_case: # It can be cases that doenst not exists use cases
-            self.use_case()
+            for self.use_case in self.use_case:
+                self.use_case()
 
     def _use_case_one_add_more_products_to_the_cart(self):
         self.messages.append(SendMessage(phone=self.customer.whatsapp, message="💳BACKENDPara melhorar o *custo benefício* de sua compra, sugerimos que *adicione mais um produto* por conta do *valor do frete.*🧀"))
@@ -79,7 +82,7 @@ class OrderManager:
                 caption = recommendation.recommendation_text
                 image_path = recommendation.recommendation_image.path
                 time.sleep(5)
-                
+                # I tought is better send message here, because the load of image in base64
                 with open(image_path, 'rb') as image_file:
                     base64_image = base64.b64encode(image_file.read()).decode()
                     self.whatsapp_client.send_image_base64(
