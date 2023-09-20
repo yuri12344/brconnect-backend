@@ -18,15 +18,21 @@ class Order(BaseModel):
         ('B', 'Boleto'),
         ('P', 'Pix'),
     ]
-    STATUS_CHOICES = [
+    PAYMENT_CHOICES = [
         (True, 'Pago'),
         (False, 'Não pago'),
+    ]
+    STATUS_CHOICES = [
+        ('Enviado', 'Enviado'),
+        ('Não enviado', 'Não enviado'),
+        ('Recebido', 'Recebido'),
     ]
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Total")
     payment_method = models.CharField(
         max_length=255, choices=PAYMENT_METHODS_CHOICES, blank=False, null=False, default='P', verbose_name="Metodo de pagamento"
     )
-    paid        = models.BooleanField(choices=STATUS_CHOICES, default=False, verbose_name="Pago")
+    paid        = models.BooleanField(choices=PAYMENT_CHOICES, default=False, verbose_name="Pago")
+    status      = models.BooleanField(choices=STATUS_CHOICES, default='Enviado', verbose_name="Status")
     paid_at     = models.DateTimeField(auto_now_add=True, verbose_name="Pago em: ")
     customer    = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders', verbose_name="Cliente")
 
