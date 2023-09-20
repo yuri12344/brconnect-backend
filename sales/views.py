@@ -37,8 +37,6 @@ class OrderManager:
                         message=message.message
                     )
                 case "RecommendationMessage":
-                    
-                    base64_image = base64.b64encode(image_file.read()).decode()
                     self.whatsapp_client.send_image_base64(
                         phone=message.phone, 
                         caption=message.caption, 
@@ -73,7 +71,8 @@ class OrderManager:
                 self.use_case()
 
     def _use_case_one_add_more_products_to_the_cart(self):
-        self.messages.append(SendMessage(phone=self.customer.whatsapp, message="💳BACKENDPara melhorar o *custo benefício* de sua compra, sugerimos que *adicione mais um produto* por conta do *valor do frete.*🧀"))
+        message = SendMessage(phone=self.customer.whatsapp, message="💳BACKENDPara melhorar o *custo benefício* de sua compra, sugerimos que *adicione mais um produto* por conta do *valor do frete.*🧀")
+        # Coloquei dessa forma, deveria ser o se.messages.append(), pois o n8n ja esta fazendo essa fn
 
     def _use_case_two_send_recommendations(self):
         recommendations = self.order.get_recommendations()
