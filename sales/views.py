@@ -24,7 +24,7 @@ class OrderManager:
         self.company            = company
         self.messages           = []
         self.whatsapp_client    = whatsapp_client
-        self.use_case           = None
+        self.use_case           = []
         self.order              = None
 
     def _send_messages(self):
@@ -71,7 +71,7 @@ class OrderManager:
                 self.use_case()
 
     def _use_case_one_add_more_products_to_the_cart(self):
-        self.messages.append(SendMessage(phone=self.customer.whatsapp, message="💳BACKENDPara melhorar o *custo benefício* de sua compra, sugerimos que *adicione mais um produto* por conta do *valor do frete.*🧀"))
+        self.messages.append(SendMessage(phone=self.customer.whatsapp, message="💳Para melhorar o *custo benefício* de sua compra, sugerimos que *adicione mais um produto* por conta do *valor do frete.*🧀"))
 
     def _use_case_two_send_recommendations(self):
         recommendations = self.order.get_recommendations()
