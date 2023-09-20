@@ -71,8 +71,7 @@ class OrderManager:
                 self.use_case()
 
     def _use_case_one_add_more_products_to_the_cart(self):
-        message = SendMessage(phone=self.customer.whatsapp, message="💳BACKENDPara melhorar o *custo benefício* de sua compra, sugerimos que *adicione mais um produto* por conta do *valor do frete.*🧀")
-        # Coloquei dessa forma, deveria ser o se.messages.append(), pois o n8n ja esta fazendo essa fn
+        self.messages.append(SendMessage(phone=self.customer.whatsapp, message="💳BACKENDPara melhorar o *custo benefício* de sua compra, sugerimos que *adicione mais um produto* por conta do *valor do frete.*🧀"))
 
     def _use_case_two_send_recommendations(self):
         recommendations = self.order.get_recommendations()
