@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework',
     'simple_history',
+    'dj_rest_auth',
     'core',
 
     'products',
