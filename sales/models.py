@@ -7,7 +7,6 @@ from django.db import models
 import ipdb
 from whatsapp.clients.whatsapp_interface import WhatsAppOrder
 
-
 class Order(BaseModel):
     """
     An Order represents a customer's order.

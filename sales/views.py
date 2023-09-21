@@ -1,14 +1,15 @@
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import OrderDataSerializer
+from rest_framework.viewsets import ModelViewSet
 
+from .serializers import WhatsAppOrderDataSerializer, OrderSerializer
 from .services.customer_managment import get_or_create_customer
+from .services.types import SendMessage
+
 from users.models import Customer
 from sales.models import Order
-
-from .services.types import SendMessage, RecommendationMessage
-
 from products.models import Product
 
 from whatsapp.clients.whatsapp_client_service import WhatsAppClientService
@@ -117,7 +118,7 @@ class HandleOrder(APIView):
     # /api/v1/sales/handle_order
     def post(self, request):
         # Get serializer and validate data
-        serializer = OrderDataSerializer(data=request.data)
+        serializer = WhatsAppOrderDataSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
         # Get handler and handle order
@@ -137,3 +138,12 @@ class HandleOrder(APIView):
             logger.error(f"Error handling order: {str(e)}")
             return Response({"message": str(e)}, status=400)
         
+
+class Orders(ModelViewSet):
+    serializer_class = OrderSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    def get_query(self):
+        company = self.request.user.company
+        return Order.objects.filter(empresa=company)
