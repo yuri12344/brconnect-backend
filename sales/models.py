@@ -1,4 +1,6 @@
 from abc import abstractmethod
+from collections import defaultdict
+
 from users.models import Customer, BaseModel
 from products.models import Product
 from django.utils import timezone
@@ -22,8 +24,10 @@ class Order(BaseModel):
         (False, 'Não pago'),
     ]
     STATUS_CHOICES = [
-        ('Enviado', 'Enviado'),
+        ('Cancelado', 'Cancelado'),
         ('Não enviado', 'Não enviado'),
+        ('Separado', 'Separado'),
+        ('Enviado', 'Enviado'),
         ('Recebido', 'Recebido'),
     ]
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Total")
@@ -97,7 +101,11 @@ class Order(BaseModel):
         self.total = self.calculate_total()
         self.save()
         return self
-        
+    
+    def get_products(self):
+        return self.product_order_items.all()
+
+           
     @abstractmethod
     def create_order_from_whatsapp_order(whatsapp_order: WhatsAppOrder, customer, company):
         order = Order.objects.create(
