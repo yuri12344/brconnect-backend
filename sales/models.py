@@ -31,7 +31,7 @@ class Order(BaseModel):
         max_length=255, choices=PAYMENT_METHODS_CHOICES, blank=False, null=False, default='P', verbose_name="Metodo de pagamento"
     )
     paid        = models.BooleanField(choices=PAYMENT_CHOICES, default=False, verbose_name="Pago")
-    status      = models.CharField(choices=STATUS_CHOICES, default='Não enviado', verbose_name="Status")
+    status      = models.CharField(choices=STATUS_CHOICES, default='Não enviado', verbose_name="Status", null=True, blank=True)
     paid_at     = models.DateTimeField(auto_now_add=True, verbose_name="Pago em: ")
     customer    = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders', verbose_name="Cliente")
 

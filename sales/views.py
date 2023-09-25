@@ -142,7 +142,6 @@ class HandleOrder(APIView):
 
 class OrdersViewSet(ModelViewSet):
     serializer_class = OrderSerializer
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
@@ -150,4 +149,4 @@ class OrdersViewSet(ModelViewSet):
         if isinstance(user, AnonymousUser):
             return Order.objects.none()  # Return an empty queryset
         company = user.company
-        return Order.objects.filter(empresa=company)
+        return Order.objects.filter(company=company)
