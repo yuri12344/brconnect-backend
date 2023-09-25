@@ -2,7 +2,6 @@ from .models import Product, ProductImage, Category, CategoryRecommendation
 from core.auxiliar import CompanyAdminMixin, AdminBase
 from django.contrib import admin
 
-
 class ProductImageInline(CompanyAdminMixin, admin.StackedInline):
     model = ProductImage
     extra = 1

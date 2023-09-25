@@ -1,4 +1,5 @@
 from rest_framework.authentication import TokenAuthentication
+from django.contrib.auth.models import AnonymousUser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -139,11 +140,14 @@ class HandleOrder(APIView):
             return Response({"message": str(e)}, status=400)
         
 
-class Orders(ModelViewSet):
+class OrdersViewSet(ModelViewSet):
     serializer_class = OrderSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     
-    def get_query(self):
-        company = self.request.user.company
+    def get_queryset(self):
+        user = self.request.user
+        if isinstance(user, AnonymousUser):
+            return Order.objects.none()  # Return an empty queryset
+        company = user.company
         return Order.objects.filter(empresa=company)
