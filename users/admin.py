@@ -25,8 +25,8 @@ class CompanyAdmin(admin.ModelAdmin):
     
 @admin.register(Customer)
 class CustomerAdmin(AdminBase):
-    list_display = ('name', 'whatsapp', 'phone', 'email', 'score')
-    search_fields = ('name', 'whatsapp', 'phone', 'email')
+    list_display = ('name', 'whatsapp','email', 'score')
+    search_fields = ('name', 'whatsapp','email')
 
 @admin.register(CustomerGroup)
 class CustomerGroupAdmin(AdminBase):

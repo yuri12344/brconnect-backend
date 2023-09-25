@@ -60,7 +60,6 @@ class Customer(BaseModel):
     ]
     name                = models.CharField(max_length=255, verbose_name="Name")
     whatsapp            = models.CharField(max_length=20, null=True, blank=True, verbose_name="WhatsApp")
-    phone               = models.CharField(validators=[phone_regex], max_length=17, blank=True, verbose_name="Numero de telefone") # validators should be a list
     street              = models.CharField(max_length=255, null=True, blank=True, verbose_name="Logradouro")
     number              = models.CharField(max_length=255, null=True, blank=True, verbose_name="Número")
     complement          = models.CharField(max_length=255, null=True, blank=True, verbose_name="Complemento")
@@ -87,7 +86,7 @@ class Customer(BaseModel):
         db_table = 'customers'
         verbose_name = "Cliente"
         verbose_name_plural = "Clientes"
-        unique_together = ('phone', 'company',)
+        unique_together = ('whatsapp', 'company',)
 
     def __str__(self):
         return self.name
@@ -104,7 +103,19 @@ class Customer(BaseModel):
             if not order.is_paid() and not order.is_expired():
                 return True
         return False
-
+    
+    def get_address(self):
+        address_parts = [
+            self.street,
+            self.number,
+            self.complement,
+            self.neighborhood,
+            self.zip,
+            self.city,
+            self.state,
+        ]
+        return ', '.join(filter(None, address_parts))
+    
     def has_address(self):
         return bool(self.street and self.state and self.city and self.zip)
 
