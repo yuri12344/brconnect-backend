@@ -52,6 +52,12 @@ class Order(BaseModel):
             categories_set = categories_set.union(product_categories)
         return categories_set
     
+    def get_total_products_quantity(self):
+        x = 0
+        for product in self.product_order_items.all():
+            x += product.quantity
+        return x
+    
     def get_recommendations(self):
         """
         The main problem I'm trying to solve here, is, if they have recommendations, we should give then the text message and 
