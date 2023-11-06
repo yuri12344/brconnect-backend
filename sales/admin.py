@@ -11,3 +11,11 @@ class OrderAdmin(AdminBase):
     search_fields = ('customer__name', 'customer__email', 'customer__cpf')
     list_filter = ('amount_paid', 'date_created')
     inlines = [ProductOrderItemTabularInline]
+    
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for instance in instances:
+            if isinstance(instance, ProductOrderItem) and not instance.company_id:
+                instance.company = request.user.company
+            instance.save()
+        formset.save_m2m()
