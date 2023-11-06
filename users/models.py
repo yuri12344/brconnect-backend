@@ -89,7 +89,7 @@ class Customer(BaseModel):
         unique_together = ('whatsapp', 'company',)
 
     def __str__(self):
-        return self.name
+        return f'{self.name}'
     
     def has_order(self) -> bool:
         """

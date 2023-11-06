@@ -19,10 +19,7 @@ class Order(BaseModel):
         ('B', 'Boleto'),
         ('P', 'Pix'),
     ]
-    PAYMENT_CHOICES = [
-        (True, 'Pago'),
-        (False, 'Não pago'),
-    ]
+
     STATUS_CHOICES = [
         ('Cancelado', 'Cancelado'),
         ('Não enviado', 'Não enviado'),
@@ -34,7 +31,8 @@ class Order(BaseModel):
     payment_method = models.CharField(
         max_length=255, choices=PAYMENT_METHODS_CHOICES, blank=False, null=False, default='P', verbose_name="Metodo de pagamento"
     )
-    paid        = models.BooleanField(choices=PAYMENT_CHOICES, default=False, verbose_name="Pago")
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Valor pago")
+    amount_missing = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Falta pagar")
     status      = models.CharField(choices=STATUS_CHOICES, default='Não enviado', verbose_name="Status", null=True, blank=True)
     paid_at     = models.DateTimeField(auto_now_add=True, verbose_name="Pago em: ")
     customer    = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders', verbose_name="Cliente")
@@ -51,7 +49,16 @@ class Order(BaseModel):
             product_categories = product.product.categories.all()
             categories_set = categories_set.union(product_categories)
         return categories_set
-    
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # Chama o método save original para salvar o objeto Order
+        self.total = self.calculate_total()  # Atualiza o total com a quantidade de produtos
+        self.amount_missing = self.get_total_missing()  # Atualiza o total com a quantidade de produtos
+        super().save(update_fields=['total'])  # Salva o objeto Order novamente com o total atualizado
+
+    def get_total_missing(self):
+        return self.total - self.amount_paid
+
     def get_total_products_quantity(self):
         x = 0
         for product in self.product_order_items.all():
