@@ -54,7 +54,7 @@ class Order(BaseModel):
         super().save(*args, **kwargs)  # Chama o método save original para salvar o objeto Order
         self.total = self.calculate_total()  # Atualiza o total com a quantidade de produtos
         self.amount_missing = self.get_total_missing()  # Atualiza o total com a quantidade de produtos
-        super().save(update_fields=['total'])  # Salva o objeto Order novamente com o total atualizado
+        super().save(update_fields=['total', 'amount_missing'])  # Salva o objeto Order novamente com o total atualizado
 
     def get_total_missing(self):
         return self.total - self.amount_paid
