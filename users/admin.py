@@ -1,5 +1,5 @@
 # admin.py
-from .models import Company, Customer, CustomerGroup, Region, Interaction
+from .models import Company, Customer, CustomerGroup, Region, Interaction, Supplier
 from rest_framework.authtoken.models import Token
 from core.auxiliar import AdminBase
 from django.contrib import admin

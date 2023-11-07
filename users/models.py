@@ -101,7 +101,7 @@ class Region(BaseModel):
         return self.regiao
 
 
-class SupplierProduct(models.Model):
+class SupplierProduct(BaseModel):
     supplier = models.ForeignKey("Supplier", on_delete=models.CASCADE)
     product = models.ForeignKey("products.Product", on_delete=models.CASCADE)
     description = models.TextField(verbose_name="Descrição")
