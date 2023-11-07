@@ -4,11 +4,10 @@ from django.dispatch import receiver
 from .models import Order
 
 
-@receiver(post_save, sender=Order)
+@receiver(post_save, sender=Order, dispatch_uid="update_order_total_once")
 def update_order_total(sender, instance, **kwargs):
-    # Verifica se a instância já tem um total calculado para evitar recálculo desnecessário.
-    if not instance.total:
+    if "updating_total" not in kwargs:
         instance.total = instance.calculate_total()
         instance.amount_missing = instance.get_total_missing()
-        # Use update_fields para economizar recursos, atualizando apenas os campos necessários.
-        instance.save(update_fields=['total', 'amount_missing'])
+        # Passa um argumento adicional para evitar a chamada recursiva.
+        instance.save(update_fields=["total", "amount_missing"], updating_total=True)

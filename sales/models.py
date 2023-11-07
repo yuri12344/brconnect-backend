@@ -74,12 +74,13 @@ class Order(BaseModel):
         return categories_set
 
     def save(self, *args, **kwargs):
-        if not self.pk:
-            super().save(*args, **kwargs)  # Isso irá gerar uma pk para 'self'.
-
-        self.total = self.calculate_total()
-        self.amount_missing = self.get_total_missing()
-        super().save(update_fields=["total", "amount_missing"])
+        if kwargs.pop("updating_total", False):
+            # Se estamos atualizando o total, não chame o sinal novamente.
+            super(Order, self).save(*args, **kwargs)
+        else:
+            # Lógica normal de save.
+            super().save(*args, **kwargs)
+            # Outras operações que podem disparar sinais.
 
     def get_total_missing(self):
         return self.total - self.amount_paid
