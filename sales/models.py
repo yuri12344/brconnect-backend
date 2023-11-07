@@ -172,7 +172,7 @@ class Order(BaseModel):
         )
         for product in whatsapp_order.products:
             product_obj, created = Product.objects.get_or_create(
-                whatsapp_meta_id=product.id
+                whatsapp_meta_id=product.id, company=company
             )
             ProductOrderItem.objects.create(
                 company=company,
