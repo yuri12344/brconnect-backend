@@ -74,15 +74,13 @@ class Order(BaseModel):
         return categories_set
 
     def save(self, *args, **kwargs):
-        # Se a instância ainda não tem uma pk, salve-a primeiro.
         if not self.pk:
+            self.total = self.calculate_total()
+            self.amount_missing = self.get_total_missing()
             super().save(*args, **kwargs)  # Isso irá gerar uma pk para 'self'.
 
-        # Agora você pode calcular o total e o amount_missing, pois 'self' tem uma pk.
         self.total = self.calculate_total()
         self.amount_missing = self.get_total_missing()
-
-        # Salve o objeto novamente para atualizar os campos calculados.
         super().save(update_fields=["total", "amount_missing"])
 
     def get_total_missing(self):
