@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from collections import defaultdict
 from datetime import timedelta
+
 import ipdb
 from django.db import models
 from django.utils import timezone
@@ -163,26 +164,23 @@ class Order(BaseModel):
     def create_order_from_whatsapp_order(
         whatsapp_order: WhatsAppOrder, customer, company
     ):
-        try:
-            order = Order.objects.create(
-                company=company,
-                customer=customer,
-                total=whatsapp_order.total_value,
-                payment_method="D",
+        order = Order.objects.create(
+            company=company,
+            customer=customer,
+            total=whatsapp_order.total_value,
+            payment_method="D",
+        )
+        for product in whatsapp_order.products:
+            product_obj, created = Product.objects.get_or_create(
+                whatsapp_meta_id=product.id, company=company
             )
-            for product in whatsapp_order.products:
-                product_obj, created = Product.objects.get_or_create(
-                    whatsapp_meta_id=product.id, company=company
-                )
-                ProductOrderItem.objects.create(
-                    company=company,
-                    order=order,
-                    product=product_obj,
-                    quantity=product.quantity,
-                )
-            return order
-        except Exception as e:
-            ipdb.set_trace()
+            ProductOrderItem.objects.create(
+                company=company,
+                order=order,
+                product=product_obj,
+                quantity=product.quantity,
+            )
+        return order
 
     def is_paid(self):
         return True if self.paid else False
