@@ -136,7 +136,6 @@ class HandleOrder(APIView):
             return Response(serializer.errors, status=400)
         # Get handler and handle order
         try:
-            ipdb.set_trace()
             customer: Customer = get_or_create_customer(request)
             whatsapp_client = WhatsAppClientService(request).get_client()
             company = request.user.company
