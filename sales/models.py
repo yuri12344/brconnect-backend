@@ -174,6 +174,7 @@ class Order(BaseModel):
             product_obj, created = Product.objects.get_or_create(
                 whatsapp_meta_id=product.id, company=company
             )
+            print(f"Company: ", company)
             ProductOrderItem.objects.create(
                 company=company,
                 order=order,
