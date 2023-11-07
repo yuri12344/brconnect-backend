@@ -75,8 +75,6 @@ class Order(BaseModel):
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            self.total = self.calculate_total()
-            self.amount_missing = self.get_total_missing()
             super().save(*args, **kwargs)  # Isso irá gerar uma pk para 'self'.
 
         self.total = self.calculate_total()
