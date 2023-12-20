@@ -29,6 +29,9 @@ class Order(BaseModel):
     total = models.DecimalField(
         max_digits=10, decimal_places=2, default=0, verbose_name="Total"
     )
+    amount_paid = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0, verbose_name="Valor pago"
+    )
     payment_method = models.CharField(
         max_length=255,
         choices=PAYMENT_METHODS_CHOICES,
@@ -36,12 +39,6 @@ class Order(BaseModel):
         null=False,
         default="P",
         verbose_name="Metodo de pagamento",
-    )
-    amount_paid = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0, verbose_name="Valor pago"
-    )
-    amount_missing = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0, verbose_name="Falta pagar"
     )
     status = models.CharField(
         choices=STATUS_CHOICES,
@@ -73,13 +70,6 @@ class Order(BaseModel):
             categories_set = categories_set.union(product_categories)
         return categories_set
 
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            super().save(*args, **kwargs)  # Isso irá gerar uma pk para 'self'.
-
-        self.total = self.calculate_total()
-        self.amount_missing = self.get_total_missing()
-        super().save(update_fields=["total", "amount_missing"])
 
     def get_total_missing(self):
         return self.total - self.amount_paid
@@ -177,7 +167,7 @@ class Order(BaseModel):
         return order
 
     def is_paid(self):
-        return True if self.paid else False
+        return self.amount_paid == self.total
 
     def is_expired(self):
         company_expiration_date_days = self.company.order_expiration_days

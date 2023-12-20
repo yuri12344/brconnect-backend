@@ -25,6 +25,10 @@ class OrderAdmin(AdminBase):
     list_filter = ("amount_paid", "date_created")
     inlines = [ProductOrderItemTabularInline]
 
+    def amount_missing(self, obj):
+        return obj.get_total_missing()
+    amount_missing.short_description = 'Valor Faltante'
+
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
         for instance in instances:
