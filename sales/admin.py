@@ -9,6 +9,7 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Sum
 from django.contrib.admin.views.main import ChangeList
+import ipdb
 
 class ProductOrderItemForm(forms.ModelForm):
     class Meta:
@@ -33,8 +34,6 @@ class ProductOrderItemTabularInline(CompanyAdminMixin, admin.TabularInline):
     total_item_value.short_description = 'Total'
 
     fields = ('product', 'quantity', 'product_price', 'total_item_value')
-
-
 
 
 class NotPaidFilter(admin.SimpleListFilter):
@@ -68,7 +67,24 @@ class TotalChangeList(ChangeList):
         super().get_results(*args, **kwargs)
         self.total_amount = self.queryset.aggregate(Sum('total'))['total__sum']
         self.total_paid = self.queryset.aggregate(Sum('amount_paid'))['amount_paid__sum']
-        
+
+def get_total_orders(modeladmin, request, queryset):
+    total = 0
+    for order in queryset:
+        total += order.total
+    return total
+
+def get_total_paid(modeladmin, request, queryset):
+    total = 0
+    for order in queryset:
+        total += order.amount_paid
+    return total
+
+def get_total_missing(modeladmin, request, queryset):
+    total = 0
+    for order in queryset:
+        total += order.get_total_missing()
+    return total
 
 @admin.register(Order)
 class OrderAdmin(AdminBase):
@@ -84,6 +100,26 @@ class OrderAdmin(AdminBase):
     list_filter = ("amount_paid", "date_created", NotPaidFilter, NotSentFilter)
     inlines = [ProductOrderItemTabularInline]
     readonly_fields = ("amount_missing_display", "customer_phone", "customer_address")
+
+    def changelist_view(self, request, extra_context=None):
+        response = super().changelist_view(request, extra_context)
+        try:
+            my_cl = response.context_data['cl']
+
+            # Example calculations - replace with your actual logic
+            my_cl.total_amount = get_total_orders(self, request, my_cl.queryset)
+            my_cl.total_paid = get_total_paid(self, request, my_cl.queryset)
+            my_cl.total_missing = get_total_missing(self, request, my_cl.queryset)
+
+            response.context_data['summary'] = {
+                'total_amount': my_cl.total_amount,
+                'total_paid': my_cl.total_paid,
+                'total_missing': my_cl.total_missing,
+            }
+        except (AttributeError, KeyError) as e:
+            pass
+
+        return response
 
     def get_fieldsets(self, request, obj=None):
         fieldsets = [
@@ -103,7 +139,11 @@ class OrderAdmin(AdminBase):
         return fieldsets
 
     def amount_missing_display(self, obj):
-        return obj.get_total_missing()
+        try:
+            return obj.get_total_missing()
+        except AttributeError:
+            return "N/A"  # or some default value
+        
     amount_missing_display.short_description = 'Valor Faltante'
 
     def customer_phone(self, obj):
@@ -122,18 +162,8 @@ class OrderAdmin(AdminBase):
             instance.save()
         formset.save_m2m()
         
-    def changelist_view(self, request, extra_context=None):
-        response = super().changelist_view(request, extra_context)
-        try:
-            my_cl = response.context_data['cl']
-            response.context_data['summary'] = {
-                'total_amount': my_cl.total_amount,
-                'total_paid': my_cl.total_paid,
-                'total_missing': my_cl.total_missing,
-            }
-        except (AttributeError, KeyError):
-            pass
-        return response
+
+    
 @admin.register(ProductOrderItem)
 class ProductOrderItemAdmin(ExportCsvMixin, AdminBase):
     list_display = (

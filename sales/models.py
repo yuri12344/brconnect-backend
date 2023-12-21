@@ -2,6 +2,10 @@ from abc import abstractmethod
 from collections import defaultdict
 from datetime import timedelta
 
+from django.db import models
+from django.db.models.signals import post_save, m2m_changed
+from django.dispatch import receiver
+
 import ipdb
 from django.db import models
 from django.utils import timezone
@@ -72,7 +76,11 @@ class Order(BaseModel):
 
     def get_total_missing(self):
         return self.total - self.amount_paid
-
+    
+    def save(self, *args, **kwargs):
+        self.total = self.calculate_total()
+        super(Order, self).save(*args, **kwargs)
+        
     def get_total_products_quantity(self):
         x = 0
         for product in self.product_order_items.all():
@@ -106,7 +114,7 @@ class Order(BaseModel):
                     recommendations.append(recommendation)
                     recommendation_categories.add(
                         recommendation.category_b.id
-                    )  # Add category to the set
+                    ) 
             return recommendations
         else:
             return None
@@ -242,3 +250,4 @@ class ProductOrderItem(BaseModel):
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity} no Pedido {self.order.id}"
+
