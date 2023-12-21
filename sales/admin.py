@@ -10,6 +10,20 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models import Sum
 from django.contrib.admin.views.main import ChangeList
 import ipdb
+from django import forms
+from django.contrib import admin
+from django.shortcuts import render
+from django.urls import path
+from django.contrib.admin import helpers
+from django.contrib import messages
+from .models import Order
+from django import forms
+from django.contrib import admin
+from django.shortcuts import render
+from django.urls import path
+from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
+from django.contrib import messages
+from .models import Order
 
 class ProductOrderItemForm(forms.ModelForm):
     class Meta:
@@ -86,6 +100,39 @@ def get_total_missing(modeladmin, request, queryset):
         total += order.get_total_missing()
     return total
 
+class OrderStatusForm(forms.Form):
+    _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
+    new_status = forms.ChoiceField(choices=Order.STATUS_CHOICES)
+def update_status(modeladmin, request, queryset):
+    form = None
+
+    if 'apply' in request.POST:
+        form = OrderStatusForm(request.POST)
+
+        if form.is_valid():
+            new_status = form.cleaned_data['new_status']
+
+            count = 0
+            for order in queryset:
+                order.status = new_status
+                order.save()
+                count += 1
+
+            modeladmin.message_user(request, f"{count} pedidos foram atualizados.")
+            return
+
+    if not form:
+        form = OrderStatusForm(initial={'_selected_action': request.POST.getlist(ACTION_CHECKBOX_NAME)})
+
+    return render(request, 'admin/sales/order_status_change_form.html', {
+        'orders': queryset,
+        'order_status_form': form,
+        'title': 'Mudar status dos pedidos',
+        'action_checkbox_name': 'action_checkbox_name',
+    })
+    
+update_status.short_description = 'Mudar status dos pedidos selecionados'
+
 @admin.register(Order)
 class OrderAdmin(AdminBase):
     change_form_template = 'admin/sales/change_form.html'
@@ -100,6 +147,7 @@ class OrderAdmin(AdminBase):
     list_filter = ("amount_paid", "date_created", NotPaidFilter, NotSentFilter)
     inlines = [ProductOrderItemTabularInline]
     readonly_fields = ("amount_missing_display", "customer_phone", "customer_address")
+    actions = [update_status]
 
     def changelist_view(self, request, extra_context=None):
         response = super().changelist_view(request, extra_context)
@@ -131,8 +179,6 @@ class OrderAdmin(AdminBase):
                     'total',
                     'amount_paid',
                     'amount_missing_display',
-                    'status',
-                    'payment_method'
                 )
             }),
         ]

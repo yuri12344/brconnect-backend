@@ -1,0 +1,10 @@
+.field-box {
+    display: inline-block;
+    width: 48%; /* Ajuste a largura conforme necessário */
+    margin-right: 2%; /* Espaçamento entre as colunas */
+    vertical-align: top;
+}
+
+.field-box:last-child {
+    margin-right: 0;
+}
