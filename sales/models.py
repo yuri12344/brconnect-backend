@@ -70,7 +70,6 @@ class Order(BaseModel):
             categories_set = categories_set.union(product_categories)
         return categories_set
 
-
     def get_total_missing(self):
         return self.total - self.amount_paid
 
@@ -181,7 +180,6 @@ class Order(BaseModel):
     def __str__(self):
         return f"Pedido para {self.customer.name}"
 
-
 class OrderToSupplier(BaseModel):
     class RequestStatus(models.TextChoices):
         NOT_REQUESTED = "NR", "Não solicitado"
@@ -230,6 +228,12 @@ class ProductOrderItem(BaseModel):
         default="not_requested",
         verbose_name="Status da Solicitação",
     )
+    def calculate_total(self):
+        return self.quantity * self.product.price if self.product else 0
+
+    @property
+    def total(self):
+        return self.calculate_total()
 
     class Meta:
         db_table = "product_order_items"

@@ -1,0 +1,17 @@
+@media print {
+    /* Oculta a barra de navegação superior */
+    #header, #branding, #user-tools {
+        display: none !important;
+    }
+
+    /* Oculta o breadcrumb */
+    .breadcrumbs {
+        display: none !important;
+    }
+    
+    #header, #branding, #user-tools, .breadcrumbs, .change-form-title {
+        display: none !important;
+    }
+
+    /* Outras regras conforme necessário */
+}

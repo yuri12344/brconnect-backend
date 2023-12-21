@@ -270,7 +270,7 @@ class Customer(BaseModel):
     def has_order(self) -> bool:
         orders = self.orders.all()
         for order in orders:
-            if not order.is_paid() and not order.is_expired():
+            if not order.is_expired():
                 return True
         return False
 
@@ -301,7 +301,6 @@ class Customer(BaseModel):
         return "\n".join(
             interaction.description for interaction in self.interactions.all()
         )
-
 
 class CustomerGroup(BaseModel):
     name = models.CharField(max_length=50, verbose_name="Nome do Grupo")

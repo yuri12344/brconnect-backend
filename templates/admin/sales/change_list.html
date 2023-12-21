@@ -1,0 +1,11 @@
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+    <div style="padding: 10px;">
+        <h2>Resumo do Pedido</h2>
+        <p>Total dos Pedidos: {{ summary.total_amount }}</p>
+        <p>Valor Total Pago: {{ summary.total_paid }}</p>
+        <p>Valor Total Faltante: {{ summary.total_missing }}</p>
+    </div>
+    {{ block.super }}
+{% endblock %}

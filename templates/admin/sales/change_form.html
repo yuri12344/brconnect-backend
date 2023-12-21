@@ -1,0 +1,8 @@
+{% extends "admin/change_form.html" %}
+
+{% load static %}  <!-- Adicione esta linha para carregar a tag static -->
+
+{% block extrahead %}
+    {{ block.super }}
+    <link href="{% static 'css/admin_print.css' %}" rel="stylesheet" type="text/css" media="print">
+{% endblock %}
