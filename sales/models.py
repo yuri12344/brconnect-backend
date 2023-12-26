@@ -78,8 +78,14 @@ class Order(BaseModel):
         return self.total - self.amount_paid
     
     def save(self, *args, **kwargs):
-        self.total = self.calculate_total()
-        super(Order, self).save(*args, **kwargs)
+        # Se o objeto já tem um ID, é uma atualização.
+        if self.id:
+            self.total = self.calculate_total()
+            super(Order, self).save(*args, **kwargs)
+        else:
+            # Se não tem um ID, é um novo objeto. Salve para obter um ID.
+            super(Order, self).save(*args, **kwargs)
+
         
     def get_total_products_quantity(self):
         x = 0
@@ -225,7 +231,10 @@ class ProductOrderItem(BaseModel):
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, verbose_name="Produto", null=True, blank=True
     )
-    quantity = models.PositiveIntegerField(verbose_name="Quantidade", default=1)
+    quantity = models.DecimalField(
+        max_digits=10, decimal_places=2, default=1, verbose_name="Quantidade"
+    )
+ 
     status = models.CharField(
         max_length=20,
         choices=[
