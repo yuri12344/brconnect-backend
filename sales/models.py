@@ -246,11 +246,12 @@ class ProductOrderItem(BaseModel):
         verbose_name="Status da Solicitação",
     )
     def calculate_total(self):
-        return self.quantity * self.product.price if self.product else 0
+        return "{:.2f}".format(self.quantity * self.product.price) if self.product else "0.00"
 
     @property
     def total(self):
         return self.calculate_total()
+
 
     class Meta:
         db_table = "product_order_items"
