@@ -13,5 +13,3 @@ def get_or_create_customer(request) -> Customer:
         raise ValueError(info)
     return customer
 
-def get_whatsapp_product_list(whatsapp_client):
-    ...

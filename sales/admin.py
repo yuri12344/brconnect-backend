@@ -4,26 +4,24 @@ from django.contrib import admin
 from core.auxiliar import AdminBase
 from django import forms
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
-from .models import ProductOrderItem, Product 
+from .models import ProductOrderItem 
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Sum
 from django.contrib.admin.views.main import ChangeList
-import ipdb
 from django import forms
 from django.contrib import admin
 from django.shortcuts import render
 from django.urls import path
-from django.contrib.admin import helpers
-from django.contrib import messages
 from .models import Order
 from django import forms
 from django.contrib import admin
 from django.shortcuts import render
 from django.urls import path
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
-from django.contrib import messages
 from .models import Order
+import ipdb
+
 
 class ProductOrderItemForm(forms.ModelForm):
     class Meta:
@@ -33,21 +31,6 @@ class ProductOrderItemForm(forms.ModelForm):
             'product': ForeignKeyRawIdWidget(ProductOrderItem._meta.get_field('product').remote_field, admin.site),
         }
         
-class ProductOrderItemTabularInline(CompanyAdminMixin, admin.TabularInline):
-    model = ProductOrderItem
-    form = ProductOrderItemForm
-    extra = 0
-    readonly_fields = ('product_price', 'total_item_value')
-
-    def product_price(self, obj):
-        return obj.product.price if obj.product else 0
-    product_price.short_description = 'Preço do Produto'
-
-    def total_item_value(self, obj):
-        return obj.total
-    total_item_value.short_description = 'Total'
-
-    fields = ('product', 'quantity', 'product_price', 'total_item_value')
 
 
 class NotPaidFilter(admin.SimpleListFilter):
@@ -100,9 +83,12 @@ def get_total_missing(modeladmin, request, queryset):
         total += order.get_total_missing()
     return total
 
+
 class OrderStatusForm(forms.Form):
     _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
     new_status = forms.ChoiceField(choices=Order.STATUS_CHOICES)
+
+
 def update_status(modeladmin, request, queryset):
     form = None
 
@@ -133,6 +119,24 @@ def update_status(modeladmin, request, queryset):
     
 update_status.short_description = 'Mudar status dos pedidos selecionados'
 
+
+class ProductOrderItemTabularInline(CompanyAdminMixin, admin.TabularInline):
+    model = ProductOrderItem
+    form = ProductOrderItemForm
+    extra = 0
+    readonly_fields = ('product_price', 'total_item_value')
+
+    def product_price(self, obj):
+        return obj.product.price if obj.product else 0
+    product_price.short_description = 'Preço do Produto'
+
+    def total_item_value(self, obj):
+        return obj.total
+    total_item_value.short_description = 'Total'
+
+    fields = ('product', 'quantity', 'product_price', 'total_item_value')
+
+
 @admin.register(Order)
 class OrderAdmin(AdminBase):
     change_form_template = 'admin/sales/change_form.html'
@@ -154,7 +158,6 @@ class OrderAdmin(AdminBase):
         try:
             my_cl = response.context_data['cl']
 
-            # Example calculations - replace with your actual logic
             my_cl.total_amount = get_total_orders(self, request, my_cl.queryset)
             my_cl.total_paid = get_total_paid(self, request, my_cl.queryset)
             my_cl.total_missing = get_total_missing(self, request, my_cl.queryset)
@@ -201,15 +204,17 @@ class OrderAdmin(AdminBase):
     customer_address.short_description = 'Endereço do Cliente'
 
     def save_formset(self, request, form, formset, change):
-        instances = formset.save(commit=False)
-        for instance in instances:
-            if isinstance(instance, ProductOrderItem) and not instance.company_id:
-                instance.company = request.user.company
-            instance.save()
-        formset.save_m2m()
-        
+            instances = formset.save(commit=False)
+            for instance in instances:
+                if isinstance(instance, ProductOrderItem) and not instance.company_id:
+                    instance.company = request.user.company
+                instance.save()
+            formset.save_m2m()
 
-    
+            super(OrderAdmin, self).save_formset(request, form, formset, change)
+
+
+
 @admin.register(ProductOrderItem)
 class ProductOrderItemAdmin(ExportCsvMixin, AdminBase):
     list_display = (
