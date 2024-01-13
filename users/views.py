@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate
-from rest_framework import status, viewsets
+from django.contrib.auth.models import AnonymousUser
+from rest_framework import permissions, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -31,6 +32,8 @@ class LoginView(APIView):
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Adiciona esta linha
+
+    def get_queryset(self):
+        return Customer.objects.filter(company=self.request.user.company)
