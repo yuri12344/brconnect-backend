@@ -4,7 +4,6 @@ import time
 
 import ipdb
 from django.contrib.auth.models import AnonymousUser
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
