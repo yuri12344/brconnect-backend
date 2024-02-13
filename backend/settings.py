@@ -12,7 +12,11 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from decouple import config
 from pathlib import Path
+from dotenv import load_dotenv
 import os
+# Load environment variables from .env file
+load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -90,22 +94,14 @@ sqlite = {
         'NAME': BASE_DIR / 'db.sqlite3',
 }
 
-postgresql = {
-        'ENGINE':   'django.db.backends.postgresql',
-        'NAME':     config('DATABASE_NAME'),
-        'USER':     config('DATABASE_USER'),
-        'PASSWORD': config('DATABASE_PASSWORD'),
-        'HOST':     config('DATABASE_HOST'),
-        'PORT':     config('DATABASE_PORT'),
-}
 
 mysql = {
-        'ENGINE':   'django.db.backends.mysql',
-        'NAME':     config('DATABASE_NAME'),
-        'USER':     config('DATABASE_USER'),
-        'PASSWORD': config('DATABASE_PASSWORD'),
-        'HOST':     config('DATABASE_HOST'),
-        'PORT':     config('DATABASE_PORT'),
+    'ENGINE': 'django.db.backends.mysql',
+    'NAME': os.getenv('DATABASE_NAME'),
+    'USER': os.getenv('DATABASE_USER'),
+    'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+    'HOST': os.getenv('DATABASE_HOST'),
+    'PORT': os.getenv('DATABASE_PORT'),
 }
 
 DATABASES = {
