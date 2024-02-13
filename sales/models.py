@@ -50,6 +50,7 @@ class Order(BaseModel):
         verbose_name="Status",
         null=True,
         blank=True,
+        max_length=100,
     )
     paid_at = models.DateTimeField(auto_now_add=True, verbose_name="Pago em: ")
     customer = models.ForeignKey(
