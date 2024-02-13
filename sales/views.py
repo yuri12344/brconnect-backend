@@ -150,9 +150,8 @@ class HandleOrder(APIView):
             order_manager.handle_order()
             whatsapp_client.send_message(
                 phone=customer.whatsapp,
-                message="🧀 *Pedido realizado com sucesso* 🧀",
+                message="🧀 *Pedido realizado com sucesso, obrigado!* 🧀",
             )
-
             return Response({"message": "data"})
         except Exception as e:
             logger.error(f"Error handling order: {str(e)}")
