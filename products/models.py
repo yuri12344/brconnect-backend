@@ -83,11 +83,8 @@ class Product(BaseModel):
         verbose_name_plural = "Produtos"
 
     @abstractmethod
-    def create_products_in_back_end_from_whatsapp_order(
-        whatsapp_order: WhatsAppOrder, company
-    ) -> list["Product"]:
+    def create_products_in_back_end_from_whatsapp_order( whatsapp_order: WhatsAppOrder, company) -> list["Product"]:
         """This function should create the products in back-end, from whatsapp order, in case they dont exists
-
         Args:
             whatsapp_order (WhatsAppOrder): _description_
         """
@@ -99,7 +96,7 @@ class Product(BaseModel):
                     defaults={
                         "whatsapp_meta_id": product.id,
                         "name": product.name,
-                        "price": product.price,
+                        "price": product.price / 10,
                         "company": company,
                         "description": "Criado automaticamente pelo sistema, via whatsapp order",
                     },

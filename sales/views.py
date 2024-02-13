@@ -110,7 +110,7 @@ class OrderManager:
         self.execute_use_case()
         self._send_messages()
 
-
+# /api/v1/sales/handle_order
 class HandleOrder(APIView):
     """
     This class is to Handle the order from whatsapp,
@@ -127,7 +127,6 @@ class HandleOrder(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    # /api/v1/sales/handle_order
     def post(self, request):
         # Get serializer and validate data
         serializer = WhatsAppOrderDataSerializer(data=request.data)
@@ -138,10 +137,10 @@ class HandleOrder(APIView):
             customer: Customer = get_or_create_customer(request)
             whatsapp_client = WhatsAppClientService(request).get_client()
             company = request.user.company
-
-            whatsapp_order: WhatsAppOrder = whatsapp_client.get_order_by_message_id(
-                request.data["message_id"]
+            whatsapp_order: WhatsAppOrder = whatsapp_client.get_products_by_invoice_order_message_json(
+                request.data["order_json"]
             )
+
             Product.create_products_in_back_end_from_whatsapp_order(
                 whatsapp_order, company
             )
@@ -149,6 +148,10 @@ class HandleOrder(APIView):
                 customer, whatsapp_order, company, whatsapp_client
             )
             order_manager.handle_order()
+            whatsapp_client.send_message(
+                phone=customer.whatsapp,
+                message="🧀 *Pedido realizado com sucesso* 🧀",
+            )
 
             return Response({"message": "data"})
         except Exception as e:

@@ -12,11 +12,11 @@ class WhatsAppOrderDataSerializer(serializers.Serializer):
     """
     Serializer para dados de pedidos do WhatsApp.
     """
-    message_id = serializers.CharField(max_length=255, required=True)
     client_name = serializers.CharField(max_length=50, required=True)
     client_phone = serializers.CharField(max_length=20, required=True)
     whatsapp_session = serializers.CharField(max_length=255, required=True)
     whatsapp_service = serializers.ChoiceField(choices=WHATSAPP_SERVICE_CHOICES, required=True)
+    order_json = serializers.JSONField(required=True)
 
     def validate(self, data):
         """
@@ -44,8 +44,6 @@ class OrderSerializer(serializers.ModelSerializer):
     def get_products(self, instance):
         product_order_items = instance.get_products()
         return ProductOrderItemSerializer(product_order_items, many=True).data
-
-
 
     class Meta:
         model = Order

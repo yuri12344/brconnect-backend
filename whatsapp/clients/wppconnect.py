@@ -4,9 +4,12 @@ from users.models import Company
 import logging
 import requests
 import ipdb
+import json
+from dataclasses import asdict  # Import asdict to convert dataclass instances to dictionaries
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+from whatsapp.clients.types.json_order_invoice import Item, Order, Transaction
 
 class WppConnectWhatsAppClient(WhatsAppClientInterface):
     def __init__(
@@ -62,6 +65,41 @@ class WppConnectWhatsAppClient(WhatsAppClientInterface):
         raw_product_list = self._get_order_by_message_id(message_id)
         return self._format_order(raw_product_list)
         
+    def get_products_by_invoice_order_message_json(self, order_json: str) -> WhatsAppOrder:
+        data = json.loads(order_json)
+        
+        # Convert each item in the order to a ProductOrder instance
+        product_orders = []
+        total_quantity = 0
+        total_value = 0
+        
+        for item in data['order']['items']:
+            # Assuming 'amount' contains the price per item and 'value' is in the smallest currency unit (e.g., centavos)
+            price_per_item = item['amount']['value'] / 100.0  # Convert to standard currency unit
+            quantity = item['quantity']
+            
+            product_order = ProductOrder(
+                price=price_per_item,
+                name=item['name'],
+                quantity=quantity,
+                id=item.get('product_id', ''),  # Assuming 'product_id' is the intended field for 'id'
+                # Add more fields if available and necessary
+            )
+            
+            product_orders.append(product_order)
+            total_quantity += quantity
+            total_value += price_per_item * quantity
+        
+        # Create the WhatsAppOrder instance
+        whatsapp_order = WhatsAppOrder(
+            products=product_orders,
+            total_quantity=total_quantity,
+            total_value=total_value
+        )
+        
+        return whatsapp_order
+
+
     def send_image_base64(self, phone: str, is_group: bool = False, filename="", caption="", base64: str = None):
         if not phone or not base64:
             raise ValueError("Phone or base64 string cannot be empty")

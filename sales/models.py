@@ -158,9 +158,7 @@ class Order(BaseModel):
         return self.product_order_items.all()
 
     @abstractmethod
-    def create_order_from_whatsapp_order(
-        whatsapp_order: WhatsAppOrder, customer, company
-    ):
+    def create_order_from_whatsapp_order(whatsapp_order: WhatsAppOrder, customer, company):
         order = Order.objects.create(
             company=company,
             customer=customer,
@@ -169,7 +167,9 @@ class Order(BaseModel):
         )
         for product in whatsapp_order.products:
             product_obj, created = Product.objects.get_or_create(
-                whatsapp_meta_id=product.id, company=company
+                whatsapp_meta_id=product.id, 
+                company=company,
+                price=product.price,
             )
             ProductOrderItem.objects.create(
                 company=company,
